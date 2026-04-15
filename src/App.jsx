@@ -119,44 +119,43 @@ export default function App() {
             </h3>
 
             {data.targets.map((t, i) => (
-              <div key={i} className="mb-6">
-                <div className="flex justify-between items-center mb-2">
-  <span className="text-sm font-medium text-slate-700">
-    {t.label}
-  </span>
-</div>
+              <div key={i} className="mb-8">
 
-               <div className="relative mt-2 bg-slate-200 h-2 rounded">
+                <div className="relative mt-6 bg-slate-200 h-2 rounded">
 
-  {/* ACTUAL BAR */}
-  <div
-    className={`${t.color} h-2 rounded`}
-    style={{ width: t.actual + "%" }}
-  />
+                  {/* ACTUAL BAR */}
+                  <div
+                    className={`${t.color} h-2 rounded`}
+                    style={{ width: t.actual + "%" }}
+                  />
 
-  {/* ACTUAL VALUE */}
-  <div
-    className="absolute -top-7 text-xs font-semibold text-slate-700"
-    style={{ left: t.actual + "%", transform: "translateX(-50%)" }}
-  >
-    {t.actual}%
-  </div>
+                  {/* LABEL + VALUE AT BAR END */}
+                  <div
+                    className="absolute -top-7 flex items-center gap-2 text-xs font-semibold text-slate-800 whitespace-nowrap"
+                    style={{
+                      left: Math.max(t.actual, 10) + "%",
+                      transform: "translateX(-50%)"
+                    }}
+                  >
+                    <span>{t.label}</span>
+                    <span className="text-slate-500">{t.actual}%</span>
+                  </div>
 
-  {/* TARGET LINE */}
-  <div
-    className="absolute -top-1 w-[2px] h-4 bg-black"
-    style={{ left: t.target + "%" }}
-  />
+                  {/* TARGET LINE */}
+                  <div
+                    className="absolute -top-1 w-[2px] h-4 bg-black"
+                    style={{ left: t.target + "%" }}
+                  />
 
-  {/* TARGET LABEL */}
-  <div
-    className="absolute top-5 text-[10px] text-slate-500"
-    style={{ left: t.target + "%", transform: "translateX(-50%)" }}
-  >
-    {t.target}%
-  </div>
+                  {/* TARGET LABEL */}
+                  <div
+                    className="absolute top-6 text-[10px] text-slate-500"
+                    style={{ left: t.target + "%", transform: "translateX(-50%)" }}
+                  >
+                    {t.target}%
+                  </div>
 
-</div>
+                </div>
               </div>
             ))}
           </div>
@@ -175,7 +174,6 @@ export default function App() {
                 }}
               />
 
-              {/* CLEAN CENTER */}
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="bg-white w-24 h-24 rounded-full shadow-inner" />
               </div>
@@ -196,7 +194,7 @@ export default function App() {
             rel="noopener noreferrer"
             className="bg-blue-600 text-white px-6 py-3 rounded-xl flex items-center gap-2"
           >
-            <span>Explore Projects</span>
+            Explore Projects
             <ArrowRight size={18}/>
           </a>
 
