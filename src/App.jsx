@@ -120,9 +120,11 @@ export default function App() {
 
             {data.targets.map((t, i) => (
               <div key={i} className="mb-6">
-                <div className="text-sm font-medium text-slate-700 mb-1">
-                  {t.label}
-                </div>
+                <div className="flex justify-between items-center mb-2">
+  <span className="text-sm font-medium text-slate-700">
+    {t.label}
+  </span>
+</div>
 
                <div className="relative mt-2 bg-slate-200 h-2 rounded">
 
