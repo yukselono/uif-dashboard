@@ -114,23 +114,47 @@ export default function App() {
 
           {/* TARGETS */}
           <div className="bg-white border rounded-xl p-6 shadow-sm">
-            <h3 className="font-bold mb-2 flex gap-2">
+            <h3 className="font-bold mb-4 flex gap-2">
               <Target size={18}/> Progress towards targets
             </h3>
 
             {data.targets.map((t, i) => (
-              <div key={i} className="mb-4">
-                <div className="flex justify-between text-sm">
-                  <span>{t.label}</span>
-                  <span>{t.actual}%</span>
+              <div key={i} className="mb-6">
+                <div className="text-sm font-medium text-slate-700 mb-1">
+                  {t.label}
                 </div>
 
                 <div className="relative mt-2 bg-slate-200 h-2 rounded">
-                  <div className={`${t.color} h-2 rounded`} style={{width:t.actual+"%"}}/>
-                  <div className="absolute top-[-3px] w-1 h-4 bg-black" style={{left:t.target+"%"}}/>
-                </div>
 
-                <div className="text-xs text-slate-500">Target {t.target}%</div>
+                  {/* ACTUAL BAR */}
+                  <div
+                    className={`${t.color} h-2 rounded`}
+                    style={{ width: t.actual + "%" }}
+                  />
+
+                  {/* ACTUAL VALUE */}
+                  <div
+                    className="absolute -top-5 text-xs font-semibold text-slate-700"
+                    style={{ left: t.actual + "%", transform: "translateX(-50%)" }}
+                  >
+                    {t.actual}%
+                  </div>
+
+                  {/* TARGET LINE */}
+                  <div
+                    className="absolute -top-1 w-[2px] h-4 bg-black"
+                    style={{ left: t.target + "%" }}
+                  />
+
+                  {/* TARGET LABEL */}
+                  <div
+                    className="absolute top-3 text-[10px] text-slate-500"
+                    style={{ left: t.target + "%", transform: "translateX(-50%)" }}
+                  >
+                    {t.target}%
+                  </div>
+
+                </div>
               </div>
             ))}
           </div>
@@ -149,10 +173,9 @@ export default function App() {
                 }}
               />
 
+              {/* CLEAN CENTER */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-white w-24 h-24 rounded-full flex items-center justify-center shadow">
-                  <span className="font-bold">100%</span>
-                </div>
+                <div className="bg-white w-24 h-24 rounded-full shadow-inner" />
               </div>
             </div>
 
@@ -186,14 +209,8 @@ export default function App() {
 
       {/* IMAGE MODAL */}
       {isImageOpen && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4"
-          onClick={() => setIsImageOpen(false)}
-        >
-          <div
-            className="bg-white w-full max-w-6xl h-[90vh] rounded-2xl shadow flex flex-col"
-            onClick={(e) => e.stopPropagation()}
-          >
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+          <div className="bg-white w-full max-w-6xl h-[90vh] rounded-2xl shadow flex flex-col">
             <div className="flex justify-between items-center px-6 py-4 border-b">
               <h3 className="font-semibold">UIF Budget Overview</h3>
               <button onClick={() => setIsImageOpen(false)}>✕</button>
@@ -209,79 +226,6 @@ export default function App() {
         </div>
       )}
 
-      {/* CMS */}
-      {isCMSOpen && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
-          <div className="bg-white p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-auto">
-
-            <h2 className="font-bold mb-4">Dashboard CMS</h2>
-
-            <label className="text-sm">Investment Mobilised (€)</label>
-            <input className="w-full border p-2 mb-2" value={editData.investmentMobilised}
-              onChange={(e)=>setEditData({...editData, investmentMobilised:e.target.value})}/>
-
-            <label className="text-sm">Multiplier Effect</label>
-            <input className="w-full border p-2 mb-4" value={editData.multiplier}
-              onChange={(e)=>setEditData({...editData, multiplier:e.target.value})}/>
-
-            <h3 className="font-semibold mt-4 mb-2">Funds Overview</h3>
-            <div className="grid grid-cols-3 gap-2 text-xs text-slate-500 mb-1">
-              <span></span><span>Amount (€ bn)</span><span>Percentage (%)</span>
-            </div>
-
-            {editData.allocations.map((item,i)=>(
-              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                <input value={item.label}
-                  onChange={(e)=>{const arr=[...editData.allocations];arr[i].label=e.target.value;setEditData({...editData, allocations:arr});}}/>
-                <input value={item.value}
-                  onChange={(e)=>{const arr=[...editData.allocations];arr[i].value=e.target.value;setEditData({...editData, allocations:arr});}}/>
-                <input type="number" value={item.percent}
-                  onChange={(e)=>{const arr=[...editData.allocations];arr[i].percent=Number(e.target.value);setEditData({...editData, allocations:arr});}}/>
-              </div>
-            ))}
-
-            <h3 className="font-semibold mt-4 mb-2">Policy Targets</h3>
-            <div className="grid grid-cols-3 gap-2 text-xs text-slate-500 mb-1">
-              <span></span><span>Current (%)</span><span>Target (%)</span>
-            </div>
-
-            {editData.targets.map((t,i)=>(
-              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                <input value={t.label}
-                  onChange={(e)=>{const arr=[...editData.targets];arr[i].label=e.target.value;setEditData({...editData, targets:arr});}}/>
-                <input type="number" value={t.actual}
-                  onChange={(e)=>{const arr=[...editData.targets];arr[i].actual=Number(e.target.value);setEditData({...editData, targets:arr});}}/>
-                <input type="number" value={t.target}
-                  onChange={(e)=>{const arr=[...editData.targets];arr[i].target=Number(e.target.value);setEditData({...editData, targets:arr});}}/>
-              </div>
-            ))}
-
-            <h3 className="font-semibold mt-4 mb-2">EU Contribution Split</h3>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs text-slate-500">Public (%)</label>
-                <input type="number" className="border p-2 w-full" value={editData.eu.public}
-                  onChange={(e)=>{const val=Number(e.target.value);setEditData({...editData, eu:{public:val, private:100-val}});}}/>
-              </div>
-
-              <div>
-                <label className="text-xs text-slate-500">Private (%)</label>
-                <input type="number" className="border p-2 w-full" value={editData.eu.private}
-                  onChange={(e)=>{const val=Number(e.target.value);setEditData({...editData, eu:{private:val, public:100-val}});}}/>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button onClick={()=>setIsCMSOpen(false)}>Cancel</button>
-              <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 rounded flex gap-2">
-                <Save size={16}/> Save
-              </button>
-            </div>
-
-          </div>
-        </div>
-      )}
     </div>
   );
 }
