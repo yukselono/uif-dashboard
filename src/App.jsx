@@ -124,37 +124,37 @@ export default function App() {
                   {t.label}
                 </div>
 
-                <div className="relative mt-2 bg-slate-200 h-2 rounded">
+               <div className="relative mt-2 bg-slate-200 h-2 rounded">
 
-                  {/* ACTUAL BAR */}
-                  <div
-                    className={`${t.color} h-2 rounded`}
-                    style={{ width: t.actual + "%" }}
-                  />
+  {/* ACTUAL BAR */}
+  <div
+    className={`${t.color} h-2 rounded`}
+    style={{ width: t.actual + "%" }}
+  />
 
-                  {/* ACTUAL VALUE */}
-                  <div
-                    className="absolute -top-5 text-xs font-semibold text-slate-700"
-                    style={{ left: t.actual + "%", transform: "translateX(-50%)" }}
-                  >
-                    {t.actual}%
-                  </div>
+  {/* ACTUAL VALUE */}
+  <div
+    className="absolute -top-7 text-xs font-semibold text-slate-700"
+    style={{ left: t.actual + "%", transform: "translateX(-50%)" }}
+  >
+    {t.actual}%
+  </div>
 
-                  {/* TARGET LINE */}
-                  <div
-                    className="absolute -top-1 w-[2px] h-4 bg-black"
-                    style={{ left: t.target + "%" }}
-                  />
+  {/* TARGET LINE */}
+  <div
+    className="absolute -top-1 w-[2px] h-4 bg-black"
+    style={{ left: t.target + "%" }}
+  />
 
-                  {/* TARGET LABEL */}
-                  <div
-                    className="absolute top-3 text-[10px] text-slate-500"
-                    style={{ left: t.target + "%", transform: "translateX(-50%)" }}
-                  >
-                    {t.target}%
-                  </div>
+  {/* TARGET LABEL */}
+  <div
+    className="absolute top-5 text-[10px] text-slate-500"
+    style={{ left: t.target + "%", transform: "translateX(-50%)" }}
+  >
+    {t.target}%
+  </div>
 
-                </div>
+</div>
               </div>
             ))}
           </div>
