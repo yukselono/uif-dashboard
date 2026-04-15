@@ -49,6 +49,9 @@ export default function App() {
     setData(editData);
     localStorage.setItem("uif-data", JSON.stringify(editData));
     setIsCMSOpen(false);
+
+    // 🔥 BONUS: force UI refresh
+    setTimeout(() => window.location.reload(), 300);
   };
 
   return (
@@ -119,27 +122,21 @@ export default function App() {
             </h3>
 
             {data.targets.map((t, i) => (
-              <div key={i} className="mb-8">
+              <div key={i} className="mb-6">
 
-                <div className="relative mt-6 bg-slate-200 h-2 rounded">
+                {/* LABEL + VALUE */}
+                <div className="flex justify-between text-sm mb-1">
+                  <span className="font-medium text-slate-700">{t.label}</span>
+                  <span className="font-semibold text-slate-800">{t.actual}%</span>
+                </div>
 
-                  {/* ACTUAL BAR */}
+                {/* BAR */}
+                <div className="relative bg-slate-200 h-2 rounded">
+
                   <div
                     className={`${t.color} h-2 rounded`}
                     style={{ width: t.actual + "%" }}
                   />
-
-                  {/* LABEL + VALUE AT BAR END */}
-                  <div
-                    className="absolute -top-7 flex items-center gap-2 text-xs font-semibold text-slate-800 whitespace-nowrap"
-                    style={{
-                      left: Math.max(t.actual, 10) + "%",
-                      transform: "translateX(-50%)"
-                    }}
-                  >
-                    <span>{t.label}</span>
-                    <span className="text-slate-500">{t.actual}%</span>
-                  </div>
 
                   {/* TARGET LINE */}
                   <div
@@ -149,8 +146,11 @@ export default function App() {
 
                   {/* TARGET LABEL */}
                   <div
-                    className="absolute top-6 text-[10px] text-slate-500"
-                    style={{ left: t.target + "%", transform: "translateX(-50%)" }}
+                    className="absolute top-4 text-[10px] text-slate-500"
+                    style={{
+                      left: t.target + "%",
+                      transform: "translateX(-50%)"
+                    }}
                   >
                     {t.target}%
                   </div>
@@ -226,6 +226,104 @@ export default function App() {
         </div>
       )}
 
+      {/* CMS */}
+      {isCMSOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
+          <div className="bg-white p-6 rounded-xl w-full max-w-2xl max-h-[90vh] overflow-auto">
+
+            <h2 className="font-bold mb-4">Dashboard CMS</h2>
+
+            <input className="w-full border p-2 mb-2"
+              value={editData.investmentMobilised}
+              onChange={(e)=>setEditData({...editData, investmentMobilised:e.target.value})}
+            />
+
+            <input className="w-full border p-2 mb-4"
+              value={editData.multiplier}
+              onChange={(e)=>setEditData({...editData, multiplier:e.target.value})}
+            />
+
+            <h3 className="font-semibold mt-4 mb-2">Funds Overview</h3>
+
+            {editData.allocations.map((item,i)=>(
+              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
+                <input value={item.label}
+                  onChange={(e)=>{
+                    const arr = editData.allocations.map((it,idx)=>
+                      idx===i?{...it,label:e.target.value}:it
+                    );
+                    setEditData({...editData, allocations:arr});
+                  }}/>
+                <input value={item.value}
+                  onChange={(e)=>{
+                    const arr = editData.allocations.map((it,idx)=>
+                      idx===i?{...it,value:e.target.value}:it
+                    );
+                    setEditData({...editData, allocations:arr});
+                  }}/>
+                <input type="number" value={item.percent}
+                  onChange={(e)=>{
+                    const arr = editData.allocations.map((it,idx)=>
+                      idx===i?{...it,percent:Number(e.target.value)}:it
+                    );
+                    setEditData({...editData, allocations:arr});
+                  }}/>
+              </div>
+            ))}
+
+            <h3 className="font-semibold mt-4 mb-2">Policy Targets</h3>
+
+            {editData.targets.map((t,i)=>(
+              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
+                <input value={t.label}
+                  onChange={(e)=>{
+                    const arr = editData.targets.map((it,idx)=>
+                      idx===i?{...it,label:e.target.value}:it
+                    );
+                    setEditData({...editData, targets:arr});
+                  }}/>
+                <input type="number" value={t.actual}
+                  onChange={(e)=>{
+                    const arr = editData.targets.map((it,idx)=>
+                      idx===i?{...it,actual:Number(e.target.value)}:it
+                    );
+                    setEditData({...editData, targets:arr});
+                  }}/>
+                <input type="number" value={t.target}
+                  onChange={(e)=>{
+                    const arr = editData.targets.map((it,idx)=>
+                      idx===i?{...it,target:Number(e.target.value)}:it
+                    );
+                    setEditData({...editData, targets:arr});
+                  }}/>
+              </div>
+            ))}
+
+            <h3 className="font-semibold mt-4 mb-2">EU Contribution</h3>
+
+            <div className="grid grid-cols-2 gap-4">
+              <input type="number" value={editData.eu.public}
+                onChange={(e)=>{
+                  const val=Number(e.target.value);
+                  setEditData({...editData, eu:{public:val, private:100-val}});
+                }}/>
+              <input type="number" value={editData.eu.private}
+                onChange={(e)=>{
+                  const val=Number(e.target.value);
+                  setEditData({...editData, eu:{private:val, public:100-val}});
+                }}/>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <button onClick={()=>setIsCMSOpen(false)}>Cancel</button>
+              <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 rounded flex gap-2">
+                <Save size={16}/> Save
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }
