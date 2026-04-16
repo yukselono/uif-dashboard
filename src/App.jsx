@@ -185,45 +185,85 @@ export default function App() {
 
       {/* IMAGE MODAL */}
       {isImageOpen && (
-        <div
-          className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50"
-          onClick={() => setIsImageOpen(false)}
-        >
-          <div
-            className="bg-white rounded-xl max-w-6xl w-full p-4"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <img
-              src="/uif-dashboard/excel.png"
-              alt="dashboard"
-              className="w-full h-auto rounded"
-            />
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50"
+             onClick={() => setIsImageOpen(false)}>
+          <div className="bg-white rounded-xl max-w-6xl w-full p-4"
+               onClick={(e) => e.stopPropagation()}>
+            <img src="/uif-dashboard/excel.png" className="w-full rounded" />
           </div>
         </div>
       )}
 
-      {/* CMS */}
+      {/* CMS (FULLY WORKING) */}
       {isCMSOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
-          <div className="bg-white p-6 w-full max-w-3xl rounded-xl">
+          <div className="bg-white p-6 w-full max-w-3xl rounded-xl overflow-auto">
 
-            <h2 className="font-bold mb-4 text-lg">Dashboard CMS</h2>
+            <h2 className="font-bold mb-4">Dashboard CMS</h2>
 
-            <input className="border p-2 w-full mb-2"
-              value={editData.investmentMobilised}
+            {/* TOP */}
+            <input value={editData.investmentMobilised}
               onChange={(e)=>setEditData({...editData, investmentMobilised:e.target.value})}/>
-
-            <input className="border p-2 w-full mb-4"
-              value={editData.multiplier}
+            <input value={editData.multiplier}
               onChange={(e)=>setEditData({...editData, multiplier:e.target.value})}/>
 
-            <input className="border p-2 w-full mb-4"
-              value={editData.lastUpdated}
+            {/* FUNDS */}
+            {editData.allocations.map((a,i)=>(
+              <div key={i} className="grid grid-cols-3 gap-2">
+                <input value={a.label} onChange={(e)=>{
+                  const arr=[...editData.allocations];
+                  arr[i]={...arr[i],label:e.target.value};
+                  setEditData({...editData, allocations:arr});
+                }}/>
+                <input value={a.value} onChange={(e)=>{
+                  const arr=[...editData.allocations];
+                  arr[i]={...arr[i],value:e.target.value};
+                  setEditData({...editData, allocations:arr});
+                }}/>
+                <input value={a.percent} onChange={(e)=>{
+                  const arr=[...editData.allocations];
+                  arr[i]={...arr[i],percent:Number(e.target.value)};
+                  setEditData({...editData, allocations:arr});
+                }}/>
+              </div>
+            ))}
+
+            {/* TARGETS */}
+            {editData.targets.map((t,i)=>(
+              <div key={i} className="grid grid-cols-3 gap-2">
+                <input value={t.label} onChange={(e)=>{
+                  const arr=[...editData.targets];
+                  arr[i]={...arr[i],label:e.target.value};
+                  setEditData({...editData, targets:arr});
+                }}/>
+                <input value={t.actual} onChange={(e)=>{
+                  const arr=[...editData.targets];
+                  arr[i]={...arr[i],actual:Number(e.target.value)};
+                  setEditData({...editData, targets:arr});
+                }}/>
+                <input value={t.target} onChange={(e)=>{
+                  const arr=[...editData.targets];
+                  arr[i]={...arr[i],target:Number(e.target.value)};
+                  setEditData({...editData, targets:arr});
+                }}/>
+              </div>
+            ))}
+
+            {/* EU */}
+            <div className="grid grid-cols-2 gap-2">
+              <input value={editData.eu.public}
+                onChange={(e)=>setEditData({...editData, eu:{public:Number(e.target.value), private:100-Number(e.target.value)}})}/>
+              <input value={editData.eu.private}
+                onChange={(e)=>setEditData({...editData, eu:{private:Number(e.target.value), public:100-Number(e.target.value)}})}/>
+            </div>
+
+            {/* DATE */}
+            <input value={editData.lastUpdated}
               onChange={(e)=>setEditData({...editData, lastUpdated:e.target.value})}/>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end mt-4 gap-2">
               <button onClick={()=>setIsCMSOpen(false)}>Cancel</button>
-              <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 flex gap-2">
+              <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-2">
                 <Save size={16}/> Save
               </button>
             </div>
