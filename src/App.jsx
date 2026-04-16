@@ -194,33 +194,33 @@ export default function App() {
         </div>
       )}
 
-      {/* CMS (FULLY WORKING) */}
+      {/* CMS */}
       {isCMSOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
           <div className="bg-white p-6 w-full max-w-3xl rounded-xl overflow-auto">
 
-            <h2 className="font-bold mb-4">Dashboard CMS</h2>
+            <h2 className="font-bold mb-4 text-lg">Dashboard CMS</h2>
 
-            {/* TOP */}
-            <input value={editData.investmentMobilised}
+            <p className="text-xs text-slate-500 mb-2">Top Metrics</p>
+            <input placeholder="Investment (€ bn)" value={editData.investmentMobilised}
               onChange={(e)=>setEditData({...editData, investmentMobilised:e.target.value})}/>
-            <input value={editData.multiplier}
+            <input placeholder="Multiplier" value={editData.multiplier}
               onChange={(e)=>setEditData({...editData, multiplier:e.target.value})}/>
 
-            {/* FUNDS */}
+            <p className="text-xs text-slate-500 mt-4 mb-2">Funds Overview (Label / Amount / %)</p>
             {editData.allocations.map((a,i)=>(
-              <div key={i} className="grid grid-cols-3 gap-2">
-                <input value={a.label} onChange={(e)=>{
+              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
+                <input placeholder="Label" value={a.label} onChange={(e)=>{
                   const arr=[...editData.allocations];
                   arr[i]={...arr[i],label:e.target.value};
                   setEditData({...editData, allocations:arr});
                 }}/>
-                <input value={a.value} onChange={(e)=>{
+                <input placeholder="€ bn" value={a.value} onChange={(e)=>{
                   const arr=[...editData.allocations];
                   arr[i]={...arr[i],value:e.target.value};
                   setEditData({...editData, allocations:arr});
                 }}/>
-                <input value={a.percent} onChange={(e)=>{
+                <input placeholder="%" value={a.percent} onChange={(e)=>{
                   const arr=[...editData.allocations];
                   arr[i]={...arr[i],percent:Number(e.target.value)};
                   setEditData({...editData, allocations:arr});
@@ -228,9 +228,9 @@ export default function App() {
               </div>
             ))}
 
-            {/* TARGETS */}
+            <p className="text-xs text-slate-500 mt-4 mb-2">Policy Targets (Current / Target)</p>
             {editData.targets.map((t,i)=>(
-              <div key={i} className="grid grid-cols-3 gap-2">
+              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
                 <input value={t.label} onChange={(e)=>{
                   const arr=[...editData.targets];
                   arr[i]={...arr[i],label:e.target.value};
@@ -249,15 +249,15 @@ export default function App() {
               </div>
             ))}
 
-            {/* EU */}
+            <p className="text-xs text-slate-500 mt-4 mb-2">EU Contribution (Public / Private %)</p>
             <div className="grid grid-cols-2 gap-2">
-              <input value={editData.eu.public}
+              <input placeholder="Public %" value={editData.eu.public}
                 onChange={(e)=>setEditData({...editData, eu:{public:Number(e.target.value), private:100-Number(e.target.value)}})}/>
-              <input value={editData.eu.private}
+              <input placeholder="Private %" value={editData.eu.private}
                 onChange={(e)=>setEditData({...editData, eu:{private:Number(e.target.value), public:100-Number(e.target.value)}})}/>
             </div>
 
-            {/* DATE */}
+            <p className="text-xs text-slate-500 mt-4 mb-2">Last Updated (e.g. 16 April 2026)</p>
             <input value={editData.lastUpdated}
               onChange={(e)=>setEditData({...editData, lastUpdated:e.target.value})}/>
 
