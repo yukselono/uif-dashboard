@@ -183,6 +183,25 @@ export default function App() {
         </div>
       </div>
 
+      {/* IMAGE MODAL */}
+      {isImageOpen && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50"
+          onClick={() => setIsImageOpen(false)}
+        >
+          <div
+            className="bg-white rounded-xl max-w-6xl w-full p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src="/uif-dashboard/excel.png"
+              alt="dashboard"
+              className="w-full h-auto rounded"
+            />
+          </div>
+        </div>
+      )}
+
       {/* CMS */}
       {isCMSOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
@@ -190,51 +209,14 @@ export default function App() {
 
             <h2 className="font-bold mb-4 text-lg">Dashboard CMS</h2>
 
-            <p className="text-xs text-slate-500 mb-2">Top Metrics</p>
-            <input className="border p-2 w-full mb-2" placeholder="Investment (€ bn)"
+            <input className="border p-2 w-full mb-2"
               value={editData.investmentMobilised}
               onChange={(e)=>setEditData({...editData, investmentMobilised:e.target.value})}/>
-            <input className="border p-2 w-full mb-4" placeholder="Multiplier"
+
+            <input className="border p-2 w-full mb-4"
               value={editData.multiplier}
               onChange={(e)=>setEditData({...editData, multiplier:e.target.value})}/>
 
-            <p className="text-xs text-slate-500 mb-2">Funds Overview (Label / Amount / %)</p>
-            {editData.allocations.map((a,i)=>(
-              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                <input placeholder="Label" value={a.label} onChange={(e)=>{
-                  const arr=[...editData.allocations];
-                  arr[i]={...arr[i],label:e.target.value};
-                  setEditData({...editData, allocations:arr});
-                }}/>
-                <input placeholder="€ bn" value={a.value} onChange={(e)=>{
-                  const arr=[...editData.allocations];
-                  arr[i]={...arr[i],value:e.target.value};
-                  setEditData({...editData, allocations:arr});
-                }}/>
-                <input placeholder="%" value={a.percent} onChange={(e)=>{
-                  const arr=[...editData.allocations];
-                  arr[i]={...arr[i],percent:Number(e.target.value)};
-                  setEditData({...editData, allocations:arr});
-                }}/>
-              </div>
-            ))}
-
-            <p className="text-xs text-slate-500 mb-2">Policy Targets (Current / Target)</p>
-            {editData.targets.map((t,i)=>(
-              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                <input value={t.label}/>
-                <input value={t.actual}/>
-                <input value={t.target}/>
-              </div>
-            ))}
-
-            <p className="text-xs text-slate-500 mb-2">EU Contribution (Public / Private)</p>
-            <div className="grid grid-cols-2 gap-2 mb-4">
-              <input value={editData.eu.public}/>
-              <input value={editData.eu.private}/>
-            </div>
-
-            <p className="text-xs text-slate-500 mb-2">Last Updated (e.g. 16 April 2026)</p>
             <input className="border p-2 w-full mb-4"
               value={editData.lastUpdated}
               onChange={(e)=>setEditData({...editData, lastUpdated:e.target.value})}/>
