@@ -1,13 +1,11 @@
 import React, { useState, useEffect } from "react";
 import {
   ArrowRight,
-  Euro,
-  TrendingUp,
+  Settings,
+  Save,
   Wallet,
   Target,
   PieChart,
-  Settings,
-  Save,
   ChevronDown,
   ChevronUp
 } from "lucide-react";
@@ -25,11 +23,10 @@ const defaultData = {
     { label: "SME Target", actual: 9.3, target: 15, color: "bg-amber-500" },
   ],
   eu: { public: 57, private: 43 },
-  lastUpdated: "2026-04-16"
+  lastUpdated: "16 April 2026"
 };
 
 export default function App() {
-  const [loaded, setLoaded] = useState(false);
   const [isCMSOpen, setIsCMSOpen] = useState(false);
   const [isImageOpen, setIsImageOpen] = useState(false);
   const [showMore, setShowMore] = useState(false);
@@ -41,8 +38,6 @@ export default function App() {
 
   const [editData, setEditData] = useState(data);
 
-  useEffect(() => setLoaded(true), []);
-
   const openCMS = () => {
     setEditData(data);
     setIsCMSOpen(true);
@@ -52,23 +47,10 @@ export default function App() {
     setData(editData);
     localStorage.setItem("uif-data", JSON.stringify(editData));
     setIsCMSOpen(false);
-    setTimeout(() => window.location.reload(), 200);
   };
 
   const teaser = data.allocations.slice(0, 1);
   const rest = data.allocations.slice(1);
-
-  const formatDate = (d) => {
-    try {
-      return new Date(d).toLocaleDateString("en-GB", {
-        day: "numeric",
-        month: "long",
-        year: "numeric"
-      });
-    } catch {
-      return "16 April 2026";
-    }
-  };
 
   return (
     <div className="bg-slate-100 min-h-screen p-6">
@@ -188,7 +170,7 @@ export default function App() {
         {/* FOOTER */}
         <div className="p-6 border-t flex justify-between items-center">
           <span className="text-xs text-slate-400">
-            Last updated: {formatDate(data.lastUpdated)}
+            Last updated: {data.lastUpdated}
           </span>
 
           <div className="flex gap-4">
@@ -196,69 +178,96 @@ export default function App() {
               Explore Projects
             </a>
 
-            <button onClick={() => setIsImageOpen(true)} className="border px-4 py-2 rounded">
+            <button
+              onClick={() => setIsImageOpen(true)}
+              className="border px-4 py-2 rounded"
+            >
               View Investment Dashboard
             </button>
           </div>
         </div>
       </div>
 
+      {/* IMAGE MODAL */}
+      {isImageOpen && (
+        <div
+          className="fixed inset-0 bg-black/70 flex items-center justify-center p-4"
+          onClick={() => setIsImageOpen(false)}
+        >
+          <div
+            className="bg-white rounded-xl max-w-6xl w-full p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <img
+              src={`${import.meta.env.BASE_URL}excel.png`}
+              alt="dashboard"
+              className="w-full h-auto rounded"
+            />
+          </div>
+        </div>
+      )}
+
       {/* CMS */}
       {isCMSOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
-          <div className="bg-white p-6 w-full max-w-3xl overflow-auto rounded-xl">
+          <div className="bg-white p-6 w-full max-w-3xl rounded-xl">
 
-            <h2 className="font-bold mb-4 text-lg">Dashboard CMS</h2>
+            <h2 className="font-bold mb-4">CMS</h2>
 
-            {/* TOP */}
-            <h3 className="font-semibold mt-2">Top Metrics</h3>
             <input className="border p-2 w-full mb-2"
               value={editData.investmentMobilised}
               onChange={(e)=>setEditData({...editData, investmentMobilised:e.target.value})}/>
+
             <input className="border p-2 w-full mb-4"
               value={editData.multiplier}
               onChange={(e)=>setEditData({...editData, multiplier:e.target.value})}/>
 
-            {/* FUNDS */}
-            <h3 className="font-semibold">Funds Overview</h3>
             {editData.allocations.map((a,i)=>(
               <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                <input value={a.label} onChange={(e)=>{
-                  const arr=editData.allocations.map((it,idx)=>idx===i?{...it,label:e.target.value}:it);
-                  setEditData({...editData, allocations:arr});
-                }}/>
-                <input value={a.value} onChange={(e)=>{
-                  const arr=editData.allocations.map((it,idx)=>idx===i?{...it,value:e.target.value}:it);
-                  setEditData({...editData, allocations:arr});
-                }}/>
-                <input value={a.percent} onChange={(e)=>{
-                  const arr=editData.allocations.map((it,idx)=>idx===i?{...it,percent:Number(e.target.value)}:it);
-                  setEditData({...editData, allocations:arr});
-                }}/>
+                <input value={a.label}
+                  onChange={(e)=>{
+                    const arr=[...editData.allocations];
+                    arr[i]={...arr[i],label:e.target.value};
+                    setEditData({...editData, allocations:arr});
+                  }}/>
+                <input value={a.value}
+                  onChange={(e)=>{
+                    const arr=[...editData.allocations];
+                    arr[i]={...arr[i],value:e.target.value};
+                    setEditData({...editData, allocations:arr});
+                  }}/>
+                <input value={a.percent}
+                  onChange={(e)=>{
+                    const arr=[...editData.allocations];
+                    arr[i]={...arr[i],percent:Number(e.target.value)};
+                    setEditData({...editData, allocations:arr});
+                  }}/>
               </div>
             ))}
 
-            {/* TARGETS */}
-            <h3 className="font-semibold mt-4">Policy Targets</h3>
             {editData.targets.map((t,i)=>(
               <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                <input value={t.label} onChange={(e)=>{
-                  const arr=editData.targets.map((it,idx)=>idx===i?{...it,label:e.target.value}:it);
-                  setEditData({...editData, targets:arr});
-                }}/>
-                <input value={t.actual} onChange={(e)=>{
-                  const arr=editData.targets.map((it,idx)=>idx===i?{...it,actual:Number(e.target.value)}:it);
-                  setEditData({...editData, targets:arr});
-                }}/>
-                <input value={t.target} onChange={(e)=>{
-                  const arr=editData.targets.map((it,idx)=>idx===i?{...it,target:Number(e.target.value)}:it);
-                  setEditData({...editData, targets:arr});
-                }}/>
+                <input value={t.label}
+                  onChange={(e)=>{
+                    const arr=[...editData.targets];
+                    arr[i]={...arr[i],label:e.target.value};
+                    setEditData({...editData, targets:arr});
+                  }}/>
+                <input value={t.actual}
+                  onChange={(e)=>{
+                    const arr=[...editData.targets];
+                    arr[i]={...arr[i],actual:Number(e.target.value)};
+                    setEditData({...editData, targets:arr});
+                  }}/>
+                <input value={t.target}
+                  onChange={(e)=>{
+                    const arr=[...editData.targets];
+                    arr[i]={...arr[i],target:Number(e.target.value)};
+                    setEditData({...editData, targets:arr});
+                  }}/>
               </div>
             ))}
 
-            {/* EU */}
-            <h3 className="font-semibold mt-4">EU Contribution</h3>
             <div className="grid grid-cols-2 gap-2 mb-4">
               <input value={editData.eu.public}
                 onChange={(e)=>setEditData({...editData, eu:{public:Number(e.target.value), private:100-Number(e.target.value)}})}/>
@@ -266,17 +275,13 @@ export default function App() {
                 onChange={(e)=>setEditData({...editData, eu:{private:Number(e.target.value), public:100-Number(e.target.value)}})}/>
             </div>
 
-            {/* DATE */}
-            <h3 className="font-semibold">Last Updated</h3>
-            <input
-              className="border p-2 w-full"
+            <input className="border p-2 w-full mb-4"
               value={editData.lastUpdated}
-              onChange={(e)=>setEditData({...editData, lastUpdated:e.target.value})}
-            />
+              onChange={(e)=>setEditData({...editData, lastUpdated:e.target.value})}/>
 
-            <div className="flex justify-end gap-2 mt-6">
+            <div className="flex justify-end gap-2">
               <button onClick={()=>setIsCMSOpen(false)}>Cancel</button>
-              <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 flex items-center gap-2">
+              <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 flex gap-2">
                 <Save size={16}/> Save
               </button>
             </div>
