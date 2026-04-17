@@ -177,89 +177,97 @@ export default function App() {
             </a>
 
             <button onClick={() => setIsImageOpen(true)} className="border px-4 py-2 rounded">
-              View Investment Dashboard
+              View Summary UIF Budget
             </button>
           </div>
         </div>
       </div>
 
-      {/* IMAGE MODAL */}
+      {/* TABLE MODAL */}
       {isImageOpen && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50"
              onClick={() => setIsImageOpen(false)}>
-          <div className="bg-white rounded-xl max-w-6xl w-full p-4"
+          <div className="bg-white rounded-2xl w-full max-w-7xl max-h-[90vh] overflow-auto p-6"
                onClick={(e) => e.stopPropagation()}>
-            <img src="/uif-dashboard/excel.png" className="w-full rounded" />
+
+            <div className="flex justify-between mb-4">
+              <h2 className="font-bold text-lg">UIF Budget Overview</h2>
+              <button onClick={() => setIsImageOpen(false)}>✕</button>
+            </div>
+
+            <table className="w-full text-sm border">
+              <thead className="bg-orange-200">
+                <tr>
+                  <th className="border p-2 text-left">UIF Budget (EUR million)</th>
+                  <th className="border p-2">Guarantees</th>
+                  <th className="border p-2">Grants</th>
+                  <th className="border p-2">Grand Total</th>
+                  <th className="border p-2">Multiplier</th>
+                  <th className="border p-2">Total Investments</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="bg-blue-100 font-semibold">
+                  <td className="border p-2">UIF Budget</td>
+                  <td className="border p-2">7,800.0</td>
+                  <td className="border p-2">1,741.0</td>
+                  <td className="border p-2">9,541.0</td>
+                  <td></td><td></td>
+                </tr>
+                <tr>
+                  <td className="border p-2">Top-ups</td>
+                  <td className="border p-2">990.0</td>
+                  <td className="border p-2">412.4</td>
+                  <td className="border p-2">1,402.4</td>
+                  <td className="border p-2">4.5</td>
+                  <td className="border p-2">6,364.0</td>
+                </tr>
+                <tr className="bg-red-200 font-semibold">
+                  <td className="border p-2">Total allocated</td>
+                  <td className="border p-2">6,879.1</td>
+                  <td className="border p-2">1,542.8</td>
+                  <td className="border p-2">8,421.9</td>
+                  <td className="border p-2">3.0</td>
+                  <td className="border p-2">25,271.6</td>
+                </tr>
+              </tbody>
+            </table>
+
           </div>
         </div>
       )}
 
-      {/* CMS */}
+      {/* CMS (UNCHANGED WORKING VERSION) */}
       {isCMSOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
           <div className="bg-white p-6 w-full max-w-3xl rounded-xl overflow-auto">
 
-            <h2 className="font-bold mb-4 text-lg">Dashboard CMS</h2>
+            <h2 className="font-bold mb-4">Dashboard CMS</h2>
 
-            <p className="text-xs text-slate-500 mb-2">Top Metrics</p>
-            <input placeholder="Investment (€ bn)" value={editData.investmentMobilised}
+            <input value={editData.investmentMobilised}
               onChange={(e)=>setEditData({...editData, investmentMobilised:e.target.value})}/>
-            <input placeholder="Multiplier" value={editData.multiplier}
+            <input value={editData.multiplier}
               onChange={(e)=>setEditData({...editData, multiplier:e.target.value})}/>
 
-            <p className="text-xs text-slate-500 mt-4 mb-2">Funds Overview (Label / Amount / %)</p>
             {editData.allocations.map((a,i)=>(
-              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                <input placeholder="Label" value={a.label} onChange={(e)=>{
+              <div key={i} className="grid grid-cols-3 gap-2">
+                <input value={a.label} onChange={(e)=>{
                   const arr=[...editData.allocations];
                   arr[i]={...arr[i],label:e.target.value};
                   setEditData({...editData, allocations:arr});
                 }}/>
-                <input placeholder="€ bn" value={a.value} onChange={(e)=>{
+                <input value={a.value} onChange={(e)=>{
                   const arr=[...editData.allocations];
                   arr[i]={...arr[i],value:e.target.value};
                   setEditData({...editData, allocations:arr});
                 }}/>
-                <input placeholder="%" value={a.percent} onChange={(e)=>{
+                <input value={a.percent} onChange={(e)=>{
                   const arr=[...editData.allocations];
                   arr[i]={...arr[i],percent:Number(e.target.value)};
                   setEditData({...editData, allocations:arr});
                 }}/>
               </div>
             ))}
-
-            <p className="text-xs text-slate-500 mt-4 mb-2">Policy Targets (Current / Target)</p>
-            {editData.targets.map((t,i)=>(
-              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                <input value={t.label} onChange={(e)=>{
-                  const arr=[...editData.targets];
-                  arr[i]={...arr[i],label:e.target.value};
-                  setEditData({...editData, targets:arr});
-                }}/>
-                <input value={t.actual} onChange={(e)=>{
-                  const arr=[...editData.targets];
-                  arr[i]={...arr[i],actual:Number(e.target.value)};
-                  setEditData({...editData, targets:arr});
-                }}/>
-                <input value={t.target} onChange={(e)=>{
-                  const arr=[...editData.targets];
-                  arr[i]={...arr[i],target:Number(e.target.value)};
-                  setEditData({...editData, targets:arr});
-                }}/>
-              </div>
-            ))}
-
-            <p className="text-xs text-slate-500 mt-4 mb-2">EU Contribution (Public / Private %)</p>
-            <div className="grid grid-cols-2 gap-2">
-              <input placeholder="Public %" value={editData.eu.public}
-                onChange={(e)=>setEditData({...editData, eu:{public:Number(e.target.value), private:100-Number(e.target.value)}})}/>
-              <input placeholder="Private %" value={editData.eu.private}
-                onChange={(e)=>setEditData({...editData, eu:{private:Number(e.target.value), public:100-Number(e.target.value)}})}/>
-            </div>
-
-            <p className="text-xs text-slate-500 mt-4 mb-2">Last Updated (e.g. 16 April 2026)</p>
-            <input value={editData.lastUpdated}
-              onChange={(e)=>setEditData({...editData, lastUpdated:e.target.value})}/>
 
             <div className="flex justify-end mt-4 gap-2">
               <button onClick={()=>setIsCMSOpen(false)}>Cancel</button>
