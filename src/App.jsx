@@ -211,15 +211,116 @@ export default function App() {
       </div>
 
       {/* IMAGE MODAL */}
-      {isImageOpen && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50"
-             onClick={() => setIsImageOpen(false)}>
-          <div className="bg-white rounded-xl max-w-6xl w-full p-4"
-               onClick={(e) => e.stopPropagation()}>
-            <img src="/uif-dashboard/excel.png" className="w-full rounded" />
-          </div>
-        </div>
-      )}
+      // SADECE BU BLOĞU KENDİ APP.JSX'İNDEKİ IMAGE MODAL İLE DEĞİŞTİR
+
+{isImageOpen && (
+  <div
+    className="fixed inset-0 bg-black/60 flex items-center justify-center p-6 z-50"
+    onClick={() => setIsImageOpen(false)}
+  >
+    <div
+      className="bg-white w-full max-w-7xl max-h-[90vh] overflow-auto rounded-xl shadow-xl p-6"
+      onClick={(e) => e.stopPropagation()}
+    >
+
+      {/* HEADER */}
+      <div className="mb-6 flex justify-between items-center border-b pb-3">
+        <h2 className="text-lg font-bold uppercase">UIF Budget Overview</h2>
+        <button onClick={() => setIsImageOpen(false)}>✕</button>
+      </div>
+
+      {/* TABLE */}
+      <div className="overflow-x-auto">
+        <table className="w-full text-xs border-collapse">
+          <thead>
+            <tr className="bg-slate-50 border-b-2">
+              <th className="p-3 text-left">[EUR million]</th>
+              <th className="p-3 text-right">Guarantees</th>
+              <th className="p-3 text-right">Grants</th>
+              <th className="p-3 text-right text-blue-700">GRAND TOTAL</th>
+              <th className="p-3 text-right">Multiplier</th>
+              <th className="p-3 text-right">Total investments</th>
+            </tr>
+          </thead>
+
+          <tbody className="divide-y">
+
+            <tr className="bg-slate-100 font-bold">
+              <td className="p-3">UIF BUDGET</td>
+              <td className="p-3 text-right">7,800.00</td>
+              <td className="p-3 text-right">1,741.00</td>
+              <td className="p-3 text-right text-blue-700">9,541.00</td>
+              <td className="p-3 text-right text-slate-400">—</td>
+              <td className="p-3 text-right text-slate-400">—</td>
+            </tr>
+
+            <tr>
+              <td className="p-3 font-medium">Top-ups</td>
+              <td className="p-3 text-right">990.00</td>
+              <td className="p-3 text-right">412.38</td>
+              <td className="p-3 text-right">1,402.38</td>
+              <td className="p-3 text-right text-blue-600">4.54x</td>
+              <td className="p-3 text-right font-semibold">6,363.95</td>
+            </tr>
+
+            <tr>
+              <td className="p-3 pl-8 text-slate-500">↳ Top-ups (contracted)</td>
+              <td className="p-3 text-right">990.00</td>
+              <td className="p-3 text-right">412.38</td>
+              <td className="p-3 text-right">1,402.38</td>
+              <td className="p-3 text-right text-blue-600">4.54x</td>
+              <td className="p-3 text-right font-semibold">6,363.95</td>
+            </tr>
+
+            <tr>
+              <td className="p-3 font-medium">EIB exclusive window (assigned)</td>
+              <td className="p-3 text-right">2,378.64</td>
+              <td className="p-3 text-right">149.75</td>
+              <td className="p-3 text-right">2,528.39</td>
+              <td className="p-3 text-right text-blue-600">1.22x</td>
+              <td className="p-3 text-right font-semibold">3,076.66</td>
+            </tr>
+
+            <tr>
+              <td className="p-3 font-medium">Open call (allocated)</td>
+              <td className="p-3 text-right">2,985.50</td>
+              <td className="p-3 text-right">810.49</td>
+              <td className="p-3 text-right">3,795.99</td>
+              <td className="p-3 text-right text-blue-600">3.14x</td>
+              <td className="p-3 text-right font-semibold">11,905.07</td>
+            </tr>
+
+            <tr>
+              <td className="p-3 pl-8 text-slate-500">↳ Open Call (contracted)</td>
+              <td className="p-3 text-right">844.50</td>
+              <td className="p-3 text-right">88.04</td>
+              <td className="p-3 text-right">932.54</td>
+              <td className="p-3 text-right text-blue-600">2.79x</td>
+              <td className="p-3 text-right font-semibold">2,599.93</td>
+            </tr>
+
+            <tr>
+              <td className="p-3 pl-8 text-slate-500">↳ Open Call (approved)</td>
+              <td className="p-3 text-right">2,141.00</td>
+              <td className="p-3 text-right">722.45</td>
+              <td className="p-3 text-right">2,863.45</td>
+              <td className="p-3 text-right text-blue-600">3.25x</td>
+              <td className="p-3 text-right font-semibold">9,305.14</td>
+            </tr>
+
+          </tbody>
+        </table>
+      </div>
+
+      {/* FOOTER */}
+      <div className="mt-6 text-xs text-slate-400 flex justify-between">
+        <span>* Values in EUR million</span>
+        <span className="italic">Internal Document</span>
+      </div>
+
+    </div>
+  </div>
+)}
 
       {/* CMS FULL (RESTORED) */}
       {isCMSOpen && (
