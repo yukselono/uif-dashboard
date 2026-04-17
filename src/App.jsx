@@ -119,7 +119,53 @@ export default function App() {
             </h3>
 
             {data.targets.map((t, i) => {
-              const scaled = Math.min((t.actual / t.target) * 100, 100);
+  const progress = Math.min((t.actual / t.target) * 100, 100);
+
+  return (
+    <div key={i} className="mb-6">
+      
+      {/* LABEL */}
+      <div className="flex justify-between text-sm mb-1">
+        <span>{t.label}</span>
+      </div>
+
+      {/* BAR */}
+      <div className="relative bg-slate-200 h-2 rounded">
+
+        {/* progress */}
+        <div
+          className={`${t.color} h-2 rounded`}
+          style={{ width: progress + "%" }}
+        />
+
+        {/* actual (bar end) */}
+        <div
+          className="absolute -top-5 text-xs font-medium whitespace-nowrap"
+          style={{ left: progress + "%" }}
+        >
+          {t.actual}%
+        </div>
+
+        {/* target line (DOĞRU: %target) */}
+        <div
+          className="absolute -top-1 w-[2px] h-4 bg-black"
+          style={{ left: t.target + "%" }}
+        />
+
+        {/* target label */}
+        <div
+          className="absolute top-3 text-xs text-slate-500 whitespace-nowrap"
+          style={{
+            left: i === 1 ? "100%" : t.target + "%", // SME sağa hizalı
+            transform: i === 1 ? "translateX(-100%)" : "translateX(-50%)"
+          }}
+        >
+          {t.target}%
+        </div>
+      </div>
+    </div>
+  );
+})}
 
               return (
                 <div key={i} className="mb-6">
