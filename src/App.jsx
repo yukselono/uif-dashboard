@@ -16,6 +16,7 @@ const defaultData = {
   allocations: [
     { label: "Funds Allocated", percent: 88.3, value: "€8.4 bn", color: "bg-indigo-600" },
     { label: "Programmes signed", percent: 44.2, value: "€4.2 bn", color: "bg-blue-500" },
+    { label: "Guarantees deployed", percent: 39.4, value: "€2.7 bn", color: "bg-emerald-500" },
     { label: "Remaining funds", percent: 11.7, value: "€1.1 bn", color: "bg-amber-400" },
   ],
   targets: [
@@ -28,7 +29,7 @@ const defaultData = {
 
 export default function App() {
   const [isCMSOpen, setIsCMSOpen] = useState(false);
-  const [isImageOpen, setIsImageOpen] = useState(false);
+  const [isTableOpen, setIsTableOpen] = useState(false);
   const [showMore, setShowMore] = useState(false);
 
   const [data, setData] = useState(() => {
@@ -37,11 +38,6 @@ export default function App() {
   });
 
   const [editData, setEditData] = useState(data);
-
-  const openCMS = () => {
-    setEditData(data);
-    setIsCMSOpen(true);
-  };
 
   const handleSave = () => {
     setData(editData);
@@ -65,7 +61,8 @@ export default function App() {
             </p>
           </div>
 
-          <button onClick={openCMS} className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-xl border">
+          <button onClick={() => setIsCMSOpen(true)}
+            className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-xl border">
             <Settings size={16}/> Manage Data (CMS)
           </button>
         </div>
@@ -103,7 +100,8 @@ export default function App() {
               </div>
             ))}
 
-            <button onClick={() => setShowMore(!showMore)} className="text-sm text-blue-600 flex items-center gap-1">
+            <button onClick={() => setShowMore(!showMore)}
+              className="text-sm text-blue-600 flex items-center gap-1">
               {showMore ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
               {showMore ? "Show less" : "Show more"}
             </button>
@@ -172,33 +170,32 @@ export default function App() {
           </span>
 
           <div className="flex gap-4">
-            <a href="https://uif.eu/programmes.html" target="_blank" className="bg-blue-600 text-white px-4 py-2 rounded">
+            <a href="https://uif.eu/programmes.html" target="_blank"
+              className="bg-blue-600 text-white px-4 py-2 rounded">
               Explore Projects
             </a>
 
-            <button onClick={() => setIsImageOpen(true)} className="border px-4 py-2 rounded">
+            <button onClick={() => setIsTableOpen(true)}
+              className="border px-4 py-2 rounded">
               View Summary UIF Budget
             </button>
           </div>
         </div>
       </div>
 
-      {/* TABLE MODAL */}
-      {isImageOpen && (
+      {/* FULL TABLE MODAL */}
+      {isTableOpen && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50"
-             onClick={() => setIsImageOpen(false)}>
+             onClick={() => setIsTableOpen(false)}>
           <div className="bg-white rounded-2xl w-full max-w-7xl max-h-[90vh] overflow-auto p-6"
                onClick={(e) => e.stopPropagation()}>
 
-            <div className="flex justify-between mb-4">
-              <h2 className="font-bold text-lg">UIF Budget Overview</h2>
-              <button onClick={() => setIsImageOpen(false)}>✕</button>
-            </div>
+            <h2 className="font-bold mb-4">UIF Budget Overview</h2>
 
             <table className="w-full text-sm border">
               <thead className="bg-orange-200">
                 <tr>
-                  <th className="border p-2 text-left">UIF Budget (EUR million)</th>
+                  <th className="border p-2">UIF Budget (EUR million)</th>
                   <th className="border p-2">Guarantees</th>
                   <th className="border p-2">Grants</th>
                   <th className="border p-2">Grand Total</th>
@@ -206,6 +203,7 @@ export default function App() {
                   <th className="border p-2">Total Investments</th>
                 </tr>
               </thead>
+
               <tbody>
                 <tr className="bg-blue-100 font-semibold">
                   <td className="border p-2">UIF Budget</td>
@@ -214,6 +212,7 @@ export default function App() {
                   <td className="border p-2">9,541.0</td>
                   <td></td><td></td>
                 </tr>
+
                 <tr>
                   <td className="border p-2">Top-ups</td>
                   <td className="border p-2">990.0</td>
@@ -222,6 +221,25 @@ export default function App() {
                   <td className="border p-2">4.5</td>
                   <td className="border p-2">6,364.0</td>
                 </tr>
+
+                <tr>
+                  <td className="border p-2">Top-ups (contracted)</td>
+                  <td className="border p-2">990.0</td>
+                  <td className="border p-2">412.4</td>
+                  <td className="border p-2">1,402.4</td>
+                  <td className="border p-2">4.5</td>
+                  <td className="border p-2">6,364.0</td>
+                </tr>
+
+                <tr>
+                  <td className="border p-2">EIB exclusive window</td>
+                  <td className="border p-2">2,378.6</td>
+                  <td className="border p-2">149.8</td>
+                  <td className="border p-2">2,528.4</td>
+                  <td className="border p-2">1.2</td>
+                  <td className="border p-2">3,076.7</td>
+                </tr>
+
                 <tr className="bg-red-200 font-semibold">
                   <td className="border p-2">Total allocated</td>
                   <td className="border p-2">6,879.1</td>
@@ -230,6 +248,14 @@ export default function App() {
                   <td className="border p-2">3.0</td>
                   <td className="border p-2">25,271.6</td>
                 </tr>
+
+                <tr className="bg-gray-100 font-semibold">
+                  <td className="border p-2">Total unallocated</td>
+                  <td className="border p-2">920.9</td>
+                  <td className="border p-2">198.2</td>
+                  <td className="border p-2">1,119.1</td>
+                  <td></td><td></td>
+                </tr>
               </tbody>
             </table>
 
@@ -237,10 +263,10 @@ export default function App() {
         </div>
       )}
 
-      {/* CMS (UNCHANGED WORKING VERSION) */}
+      {/* CMS FULL WORKING */}
       {isCMSOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
-          <div className="bg-white p-6 w-full max-w-3xl rounded-xl overflow-auto">
+          <div className="bg-white p-6 w-full max-w-3xl rounded-xl">
 
             <h2 className="font-bold mb-4">Dashboard CMS</h2>
 
