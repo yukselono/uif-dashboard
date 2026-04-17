@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   ArrowRight,
   Settings,
@@ -7,10 +7,15 @@ import {
   Target,
   PieChart,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Edit3,
+  X,
+  Plus,
+  AlertCircle
 } from "lucide-react";
 
-const defaultData = {
+// Dashboard metrikleri için başlangıç verileri
+const defaultDashboardData = {
   investmentMobilised: "€25.2 bn",
   multiplier: "x3.0",
   allocations: [
@@ -26,466 +31,465 @@ const defaultData = {
   lastUpdated: "16 April 2026"
 };
 
+// Bütçe Tablosu için görseldeki veriler (image_47ce69.png baz alınmıştır)
+const defaultTableData = [
+  { id: 1, label: "1. UIF BUDGET", guarantees: 7800.00, grants: 1741.00, multiplier: null, totalInvestments: null, type: 'header' },
+  { id: 2, label: "2. TOP-UPS", guarantees: null, grants: null, multiplier: null, totalInvestments: null, type: 'group' },
+  { id: 3, label: "Total available", guarantees: 990.00, grants: 412.38, multiplier: null, totalInvestments: null, type: 'indent-1-italic' },
+  { id: 4, label: "↳ Top-ups (contracted)", guarantees: 990.00, grants: 412.38, multiplier: 4.54, totalInvestments: 6363.95, type: 'indent-2' },
+  { id: 6, label: "3. EIB EXCLUSIVE WINDOW", guarantees: null, grants: null, multiplier: null, totalInvestments: null, type: 'group' },
+  { id: 8, label: "↳ EIB exclusive window (assigned)", guarantees: 2378.64, grants: 149.75, multiplier: 1.22, totalInvestments: 3076.66, type: 'indent-2' },
+  { id: 9, label: "4. OPEN CALL", guarantees: null, grants: null, multiplier: null, totalInvestments: null, type: 'group' },
+  { id: 11, label: "↳ Open call (allocated)", guarantees: 2985.50, grants: 810.49, multiplier: 3.14, totalInvestments: 11905.07, type: 'indent-2' },
+  { id: 12, label: "↳ Open call (contracted)", guarantees: 844.50, grants: 88.04, multiplier: 2.79, totalInvestments: 2599.93, type: 'indent-2' },
+  { id: 13, label: "↳ Open call (approved)", guarantees: 2141.00, grants: 722.45, multiplier: 3.25, totalInvestments: 9305.14, type: 'indent-2' },
+  { id: 16, label: "5. BANKING CALL", guarantees: null, grants: null, multiplier: null, totalInvestments: null, type: 'group' },
+  { id: 17, label: "↳ Banking Call (contracted)", guarantees: 131.00, grants: 6.46, multiplier: 2.87, totalInvestments: 394.02, type: 'indent-2' },
+  { id: 18, label: "↳ Banking Call (approved)", guarantees: 145.00, grants: 14.77, multiplier: 2.81, totalInvestments: 448.97, type: 'indent-2' },
+  { id: 14, label: "TOTAL ALLOCATED AMOUNT", guarantees: 6354.14, grants: 1372.63, multiplier: 3.20, totalInvestments: 21345.68, type: 'summary-allocated' },
+  { id: 15, label: "TOTAL UNALLOCATED AMOUNT", guarantees: 1445.86, grants: 368.37, multiplier: null, totalInvestments: null, type: 'summary-unallocated' }
+];
+
 export default function App() {
-  const [isCMSOpen, setIsCMSOpen] = useState(false);
-  const [isImageOpen, setIsImageOpen] = useState(false);
+  const [isDashboardCMSOpen, setIsDashboardCMSOpen] = useState(false);
+  const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
+  const [isBudgetEditing, setIsBudgetEditing] = useState(false);
   const [showMore, setShowMore] = useState(false);
 
-  const [data, setData] = useState(() => {
-    const saved = localStorage.getItem("uif-data");
-    return saved ? JSON.parse(saved) : defaultData;
+  // Ana State Yönetimi
+  const [dashboardData, setDashboardData] = useState(() => {
+    const saved = localStorage.getItem("uif-dashboard-data");
+    return saved ? JSON.parse(saved) : defaultDashboardData;
   });
 
-  const [editData, setEditData] = useState(data);
+  const [tableData, setTableData] = useState(() => {
+    const saved = localStorage.getItem("uif-table-data");
+    return saved ? JSON.parse(saved) : defaultTableData;
+  });
 
-  const openCMS = () => {
-    setEditData(data);
-    setIsCMSOpen(true);
+  // Düzenleme sırasında kullanılan geçici state'ler
+  const [tempDashboard, setTempDashboard] = useState(dashboardData);
+  const [tempTable, setTempTable] = useState(tableData);
+
+  const openDashboardCMS = () => {
+    setTempDashboard(dashboardData);
+    setIsDashboardCMSOpen(true);
   };
 
-  const handleSave = () => {
-    setData(editData);
-    localStorage.setItem("uif-data", JSON.stringify(editData));
-    setIsCMSOpen(false);
+  const handleSaveAll = () => {
+    setDashboardData(tempDashboard);
+    setTableData(tempTable);
+    localStorage.setItem("uif-dashboard-data", JSON.stringify(tempDashboard));
+    localStorage.setItem("uif-table-data", JSON.stringify(tempTable));
+    setIsDashboardCMSOpen(false);
+    setIsBudgetEditing(false);
   };
 
-  const teaser = data.allocations.slice(0, 1);
-  const rest = data.allocations.slice(1);
+  // Sayı formatlama yardımcısı
+  const formatNum = (num) => {
+    if (num === null || num === undefined || isNaN(num) || num === "") return "—";
+    return Number(num).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
 
   return (
-    <div className="bg-slate-100 min-h-screen p-6">
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow border">
+    <div className="bg-slate-100 min-h-screen p-6 font-sans text-slate-900">
+      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow border overflow-hidden">
 
         {/* HEADER */}
-        <div className="p-6 flex justify-between items-center border-b">
+        <div className="p-6 flex justify-between items-center border-b bg-white">
           <div>
-            <h1 className="text-3xl font-bold">UIF Data Dashboard</h1>
+            <h1 className="text-3xl font-bold text-slate-900">UIF Data Dashboard</h1>
             <p className="text-slate-500">
               Tracking the progress of deployment of the Ukraine Investment Framework
             </p>
           </div>
-
-          <button onClick={openCMS} className="flex items-center gap-2 px-4 py-2 bg-slate-100 rounded-xl border">
-            <Settings size={16}/> Manage Data (CMS)
+          <button 
+            onClick={openDashboardCMS} 
+            className="flex items-center gap-2 px-4 py-2 bg-slate-50 hover:bg-slate-100 transition rounded-xl border text-sm font-semibold"
+          >
+            <Settings size={16}/> Manage Dashboard
           </button>
         </div>
 
-        {/* TOP */}
-        <div className="p-6 grid grid-cols-2 gap-6">
-          <div className="bg-blue-600 text-white p-6 rounded-xl">
-            <p className="text-xs">Investment Expected to be Mobilised</p>
-            <h2 className="text-3xl font-bold">{data.investmentMobilised}</h2>
+        {/* TOP METRICS */}
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-blue-600 text-white p-6 rounded-2xl shadow-sm">
+            <p className="text-xs uppercase tracking-wider font-bold opacity-80 mb-1">Investment Expected to be Mobilised</p>
+            <h2 className="text-4xl font-bold">{dashboardData.investmentMobilised}</h2>
           </div>
 
-          <div className="bg-emerald-600 text-white p-6 rounded-xl">
-            <p className="text-xs">Multiplier</p>
-            <h2 className="text-3xl font-bold">{data.multiplier}</h2>
+          <div className="bg-emerald-600 text-white p-6 rounded-2xl shadow-sm">
+            <p className="text-xs uppercase tracking-wider font-bold opacity-80 mb-1">Multiplier</p>
+            <h2 className="text-4xl font-bold">{dashboardData.multiplier}</h2>
           </div>
         </div>
 
-        {/* FUNDS */}
+        {/* FUNDS OVERVIEW */}
         <div className="px-6 pb-6">
-          <div className="bg-white border rounded-xl p-6">
-            <h3 className="font-bold mb-4 flex gap-2">
-              <Wallet size={18}/> UIF Funds Overview
+          <div className="bg-white border rounded-2xl p-6 shadow-sm">
+            <h3 className="font-bold mb-6 flex items-center gap-2 text-slate-800">
+              <Wallet size={18} className="text-blue-600"/> UIF Funds Overview
             </h3>
 
-            {[...teaser, ...(showMore ? rest : [])].map((item, i) => (
-              <div key={i} className="mb-4">
-                <div className="flex justify-between text-sm">
+            {[...dashboardData.allocations.slice(0, 1), ...(showMore ? dashboardData.allocations.slice(1) : [])].map((item, i) => (
+              <div key={i} className="mb-6 last:mb-0">
+                <div className="flex justify-between text-sm mb-2 font-medium text-slate-700">
                   <span>{item.label}</span>
-                  <span>{item.value} ({item.percent}%)</span>
+                  <span>{item.value} <span className="text-slate-400">({item.percent}%)</span></span>
                 </div>
 
-                <div className="bg-slate-200 h-3 rounded">
-                  <div className={`${item.color} h-3 rounded`} style={{ width: item.percent + "%" }} />
+                <div className="bg-slate-100 h-3 rounded-full overflow-hidden">
+                  <div className={`${item.color} h-full rounded-full transition-all duration-500`} style={{ width: item.percent + "%" }} />
                 </div>
               </div>
             ))}
 
-            <button onClick={() => setShowMore(!showMore)} className="text-sm text-blue-600 flex items-center gap-1">
+            <button 
+              onClick={() => setShowMore(!showMore)} 
+              className="mt-4 text-xs font-bold text-blue-600 flex items-center gap-1 hover:underline"
+            >
               {showMore ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
-              {showMore ? "Show less" : "Show more"}
+              {showMore ? "SHOW LESS" : "SHOW MORE"}
             </button>
           </div>
         </div>
 
-        {/* TARGET + PIE */}
-        <div className="grid grid-cols-2 gap-6 px-6 pb-6">
-
-          <div className="bg-white border rounded-xl p-6">
-            <h3 className="font-bold mb-4 flex gap-2">
-              <Target size={18}/> Progress towards targets
+        {/* TARGETS & PIE */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 pb-6">
+          <div className="bg-white border rounded-2xl p-6 shadow-sm">
+            <h3 className="font-bold mb-6 flex items-center gap-2 text-slate-800">
+              <Target size={18} className="text-rose-600"/> Progress towards targets
             </h3>
 
-            {data.targets.map((t, i) => {
+            {dashboardData.targets.map((t, i) => {
               const progress = Math.min((t.actual / t.target) * 100, 100);
-
               return (
-                <div key={i} className="mb-6">
-
-                  <div className="flex justify-between text-sm mb-2">
+                <div key={i} className="mb-10 last:mb-2">
+                  <div className="flex justify-between text-sm mb-6 font-medium text-slate-700">
                     <span>{t.label}</span>
                   </div>
-
-                  <div className="relative bg-slate-200 h-2 rounded mt-4">
-
-                    <div
-                      className={`${t.color} h-2 rounded`}
-                      style={{ width: progress + "%" }}
-                    />
-
-                    <div
-                      className="absolute -top-5 text-xs whitespace-nowrap"
-                      style={{
-                        left: progress + "%",
-                        transform: "translateX(-50%)"
-                      }}
-                    >
+                  <div className="relative bg-slate-100 h-2 rounded-full">
+                    <div className={`${t.color} h-2 rounded-full`} style={{ width: progress + "%" }} />
+                    <div className="absolute -top-7 text-xs font-bold px-2 py-1 bg-slate-800 text-white rounded" style={{ left: progress + "%", transform: "translateX(-50%)" }}>
                       {t.actual}%
                     </div>
-
-                    {/* FIX */}
-                    <div
-                      className="absolute -top-1 w-[2px] h-4 bg-black"
-                      style={{ left: i === 1 ? "100%" : t.target + "%" }}
-                    />
-
-                    <div
-                      className="absolute top-3 text-xs text-slate-500 whitespace-nowrap"
-                      style={{
-                        left: i === 1 ? "100%" : t.target + "%",
-                        transform: i === 1 ? "translateX(-100%)" : "translateX(-50%)"
-                      }}
-                    >
-                      {t.target}%
+                    <div className="absolute -top-1 w-[2px] h-4 bg-slate-900" style={{ left: i === 1 ? "100%" : t.target + "%" }} />
+                    <div className="absolute top-4 text-[10px] font-bold text-slate-400" style={{ left: i === 1 ? "100%" : t.target + "%", transform: i === 1 ? "translateX(-100%)" : "translateX(-50%)" }}>
+                      TARGET: {t.target}%
                     </div>
-
                   </div>
                 </div>
               );
             })}
           </div>
 
-          {/* PIE */}
-          <div className="bg-white border rounded-xl p-6 text-center">
-            <h3 className="font-bold mb-2 flex justify-center gap-2">
-              <PieChart size={18}/> Share of EU Contribution
+          <div className="bg-white border rounded-2xl p-6 text-center shadow-sm">
+            <h3 className="font-bold mb-6 flex justify-center items-center gap-2 text-slate-800">
+              <PieChart size={18} className="text-indigo-600"/> Share of EU Contribution
             </h3>
 
-            <div className="relative w-40 h-40 mx-auto">
-              <div
-                className="w-full h-full rounded-full"
-                style={{
-                  background: `conic-gradient(#3b82f6 0% ${data.eu.public}%, #f43f5e ${data.eu.public}% 100%)`
-                }}
-              />
+            <div className="relative w-44 h-44 mx-auto">
+              <div className="w-full h-full rounded-full" style={{ background: `conic-gradient(#3b82f6 0% ${dashboardData.eu.public}%, #f43f5e ${dashboardData.eu.public}% 100%)` }} />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-white w-24 h-24 rounded-full shadow-inner" />
+                <div className="bg-white w-28 h-28 rounded-full shadow-inner flex flex-col items-center justify-center">
+                   {/* Pasta grafik merkezi boş bırakıldı */}
+                </div>
               </div>
             </div>
 
-            <div className="flex justify-center gap-4 mt-4 text-sm">
-              <span>Public ({data.eu.public}%)</span>
-              <span>Private ({data.eu.private}%)</span>
+            <div className="flex justify-center gap-6 mt-8 text-xs font-bold uppercase tracking-widest">
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-blue-500"/>
+                <span className="text-slate-600">Public ({dashboardData.eu.public}%)</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="w-3 h-3 rounded-full bg-rose-500"/>
+                <span className="text-slate-600">Private ({dashboardData.eu.private}%)</span>
+              </div>
             </div>
           </div>
         </div>
 
         {/* FOOTER */}
-        <div className="p-6 border-t flex justify-between items-center">
-          <span className="text-xs text-slate-400">
-            Last updated: {data.lastUpdated}
+        <div className="p-6 border-t bg-slate-50 flex flex-col md:flex-row justify-between items-center gap-4">
+          <span className="text-xs font-medium text-slate-400">
+            LAST UPDATED: {dashboardData.lastUpdated}
           </span>
 
           <div className="flex gap-4">
-            <a href="https://uif.eu/programmes.html" target="_blank" className="bg-blue-600 text-white px-4 py-2 rounded">
+            <a 
+              href="https://uif.eu/programmes.html" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="bg-blue-600 hover:bg-blue-700 transition text-white px-6 py-2 rounded-xl text-sm font-bold shadow-md"
+            >
               Explore Projects
             </a>
 
-            <button onClick={() => setIsImageOpen(true)} className="border px-4 py-2 rounded">
+            <button 
+              onClick={() => setIsBudgetModalOpen(true)} 
+              className="bg-white border hover:bg-slate-50 transition px-6 py-2 rounded-xl text-sm font-bold shadow-sm"
+            >
               View Summary UIF Budget
             </button>
           </div>
         </div>
       </div>
 
-      {/* IMAGE MODAL */}
-{isImageOpen && (
-  <div
-    className="fixed inset-0 bg-black/60 flex items-center justify-center p-6 z-50"
-    onClick={() => setIsImageOpen(false)}
-  >
-    <div
-      className="bg-white w-full max-w-7xl max-h-[90vh] overflow-auto rounded-xl shadow-xl p-6"
-      onClick={(e) => e.stopPropagation()}
-    >
-
-      {/* HEADER */}
-      <div className="mb-6 flex justify-between items-center border-b pb-3">
-        <h2 className="text-lg font-bold uppercase">UIF Budget Overview</h2>
-        <button onClick={() => setIsImageOpen(false)}>✕</button>
-      </div>
-
-      <div className="overflow-x-auto">
-        <table className="w-full text-xs border-collapse">
-
-          <thead>
-            <tr className="bg-slate-50 border-b-2 text-slate-500 uppercase tracking-wide text-[10px]">
-              <th className="p-3 text-left w-1/3">[EUR million]</th>
-              <th className="p-3 text-right">Guarantees</th>
-              <th className="p-3 text-right">Grants</th>
-              <th className="p-3 text-right text-blue-700">Grand Total</th>
-              <th className="p-3 text-right">Multiplier</th>
-              <th className="p-3 text-right">Total investments</th>
-            </tr>
-          </thead>
-
-          <tbody className="divide-y text-slate-700">
-
-            {/* HEADER */}
-            <tr className="bg-slate-100 font-bold">
-              <td className="p-3">1. UIF BUDGET</td>
-              <td className="p-3 text-right">7,800.00</td>
-              <td className="p-3 text-right">1,741.00</td>
-              <td className="p-3 text-right text-blue-700">9,541.00</td>
-              <td className="p-3 text-right text-slate-400">—</td>
-              <td className="p-3 text-right text-slate-400">—</td>
-            </tr>
-
-            {/* GROUP */}
-            <tr className="bg-slate-50 font-semibold">
-              <td className="p-3">2. MS AND OTHER TOP-UPS</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-            </tr>
-
-            <tr className="italic text-slate-500">
-              <td className="p-3 pl-8">Total available (under MS and other top-ups)</td>
-              <td className="p-3 text-right">990.00</td>
-              <td className="p-3 text-right">412.38</td>
-              <td className="p-3 text-right font-semibold">1,402.38</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-            </tr>
-
-            <tr>
-              <td className="p-3 pl-12 text-slate-500">↳ Total MS top-up (contracted)</td>
-              <td className="p-3 text-right">990.00</td>
-              <td className="p-3 text-right">412.38</td>
-              <td className="p-3 text-right font-semibold">1,402.38</td>
-              <td className="p-3 text-right text-blue-600">4.54</td>
-              <td className="p-3 text-right font-semibold">6,363.95</td>
-            </tr>
-
-            <tr>
-              <td className="p-3 pl-12 text-slate-500">↳ Total other top-up (contracted)</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-            </tr>
-
-            {/* EIB */}
-            <tr className="bg-slate-50 font-semibold">
-              <td className="p-3">3. EIB EXCLUSIVE WINDOW</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-            </tr>
-
-            <tr className="italic text-slate-500">
-              <td className="p-3 pl-8">EIB exclusive window (available)</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-            </tr>
-
-            <tr>
-              <td className="p-3 pl-12 text-slate-500">↳ EIB exclusive window (assigned)</td>
-              <td className="p-3 text-right">2,378.64</td>
-              <td className="p-3 text-right">149.75</td>
-              <td className="p-3 text-right font-semibold">2,528.39</td>
-              <td className="p-3 text-right text-blue-600">1.22</td>
-              <td className="p-3 text-right font-semibold">3,076.66</td>
-            </tr>
-
-            {/* OPEN CALL */}
-            <tr className="bg-slate-50 font-semibold">
-              <td className="p-3">4. OPEN CALL</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-            </tr>
-
-            <tr className="italic text-slate-500">
-              <td className="p-3 pl-8">Open call (available)</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-            </tr>
-
-            <tr>
-              <td className="p-3 pl-12 text-slate-500">↳ Open call (allocated)</td>
-              <td className="p-3 text-right">2,985.50</td>
-              <td className="p-3 text-right">810.49</td>
-              <td className="p-3 text-right font-semibold">3,795.99</td>
-              <td className="p-3 text-right text-blue-600">3.14</td>
-              <td className="p-3 text-right font-semibold">11,905.07</td>
-            </tr>
-
-            <tr>
-              <td className="p-3 pl-12 text-slate-500">↳ Open call (contracted)</td>
-              <td className="p-3 text-right">844.50</td>
-              <td className="p-3 text-right">88.04</td>
-              <td className="p-3 text-right font-semibold">932.54</td>
-              <td className="p-3 text-right text-blue-600">2.79</td>
-              <td className="p-3 text-right font-semibold">2,599.93</td>
-            </tr>
-
-            <tr>
-              <td className="p-3 pl-12 text-slate-500">↳ Open call (approved)</td>
-              <td className="p-3 text-right">2,141.00</td>
-              <td className="p-3 text-right">722.45</td>
-              <td className="p-3 text-right font-semibold">2,863.45</td>
-              <td className="p-3 text-right text-blue-600">3.25</td>
-              <td className="p-3 text-right font-semibold">9,305.14</td>
-            </tr>
-
-            {/* SUMMARY */}
-            <tr className="bg-slate-100 font-bold">
-              <td className="p-3">TOTAL ALLOCATED AMOUNT</td>
-              <td className="p-3 text-right">6,354.14</td>
-              <td className="p-3 text-right">1,372.63</td>
-              <td className="p-3 text-right">7,726.77</td>
-              <td className="p-3 text-right text-blue-600">3.20</td>
-              <td className="p-3 text-right">21,345.68</td>
-            </tr>
-
-            <tr className="font-bold">
-              <td className="p-3">TOTAL UNALLOCATED AMOUNT</td>
-              <td className="p-3 text-right text-red-600">1,445.86</td>
-              <td className="p-3 text-right text-red-600">368.37</td>
-              <td className="p-3 text-right text-red-600">1,814.23</td>
-              <td className="p-3 text-right">—</td>
-              <td className="p-3 text-right">—</td>
-            </tr>
-
-          </tbody>
-        </table>
-      </div>
-
-      <div className="mt-6 text-xs text-slate-400 italic">
-        * Values in EUR million.
-      </div>
-
-    </div>
-  </div>
-)}
-
-      {/* CMS FULL (RESTORED) */}
-      {isCMSOpen && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
-          <div className="bg-white p-6 w-full max-w-3xl rounded-xl overflow-auto">
-
-            <h2 className="font-bold mb-4 text-lg">Dashboard CMS</h2>
-
-            <p className="text-xs text-slate-500 mb-2">Top Metrics</p>
-            <input className="border p-2 w-full mb-2 rounded"
-              value={editData.investmentMobilised}
-              onChange={(e)=>setEditData({...editData, investmentMobilised:e.target.value})}/>
-            <input className="border p-2 w-full mb-4 rounded"
-              value={editData.multiplier}
-              onChange={(e)=>setEditData({...editData, multiplier:e.target.value})}/>
-
-            <p className="text-xs text-slate-500 mb-2">Funds Overview</p>
-            {editData.allocations.map((a,i)=>(
-              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                <input className="border p-2 rounded" value={a.label}
-                  onChange={(e)=>{
-                    const arr=[...editData.allocations];
-                    arr[i].label=e.target.value;
-                    setEditData({...editData, allocations:arr});
-                  }}/>
-                <input className="border p-2 rounded" value={a.value}
-                  onChange={(e)=>{
-                    const arr=[...editData.allocations];
-                    arr[i].value=e.target.value;
-                    setEditData({...editData, allocations:arr});
-                  }}/>
-                <input className="border p-2 rounded" value={a.percent}
-                  onChange={(e)=>{
-                    const arr=[...editData.allocations];
-                    arr[i].percent=Number(e.target.value);
-                    setEditData({...editData, allocations:arr});
-                  }}/>
+      {/* --- BÜTÇE TABLOSU MODALI (Görsel Verileriyle Güncellendi) --- */}
+      {isBudgetModalOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 md:p-10 z-50">
+          <div className="bg-white w-full max-w-7xl max-h-[95vh] overflow-hidden rounded-3xl shadow-2xl flex flex-col">
+            
+            {/* Modal Header */}
+            <div className="p-6 border-b flex justify-between items-center bg-slate-50/50">
+              <div>
+                <h2 className="text-xl font-bold uppercase text-slate-800 tracking-tight">UIF Budget Overview</h2>
               </div>
-            ))}
-
-            <p className="text-xs text-slate-500 mt-4 mb-2">Targets</p>
-            {editData.targets.map((t,i)=>(
-              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                <input className="border p-2 rounded" value={t.label}
-                  onChange={(e)=>{
-                    const arr=[...editData.targets];
-                    arr[i].label=e.target.value;
-                    setEditData({...editData, targets:arr});
-                  }}/>
-                <input className="border p-2 rounded" value={t.actual}
-                  onChange={(e)=>{
-                    const arr=[...editData.targets];
-                    arr[i].actual=Number(e.target.value);
-                    setEditData({...editData, targets:arr});
-                  }}/>
-                <input className="border p-2 rounded" value={t.target}
-                  onChange={(e)=>{
-                    const arr=[...editData.targets];
-                    arr[i].target=Number(e.target.value);
-                    setEditData({...editData, targets:arr});
-                  }}/>
+              <div className="flex gap-3">
+                {!isBudgetEditing ? (
+                  <button 
+                    onClick={() => {
+                      setTempTable(tableData);
+                      setIsBudgetEditing(true);
+                    }} 
+                    className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 transition rounded-xl text-xs font-bold"
+                  >
+                    <Edit3 size={14}/> Edit Values
+                  </button>
+                ) : (
+                  <button 
+                    onClick={handleSaveAll} 
+                    className="flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white hover:bg-emerald-700 transition rounded-xl text-xs font-bold shadow-lg"
+                  >
+                    <Save size={14}/> Save Changes
+                  </button>
+                )}
+                <button 
+                  onClick={() => {
+                    setIsBudgetModalOpen(false);
+                    setIsBudgetEditing(false);
+                  }} 
+                  className="p-2 hover:bg-slate-100 rounded-full transition"
+                >
+                  <X size={20}/>
+                </button>
               </div>
-            ))}
-
-            <p className="text-xs text-slate-500 mt-4 mb-2">EU Contribution</p>
-            <div className="grid grid-cols-2 gap-2">
-              <input className="border p-2 rounded"
-                value={editData.eu.public}
-                onChange={(e)=>{
-                  const val = Number(e.target.value);
-                  setEditData({...editData, eu:{public:val, private:100-val}});
-                }}/>
-              <input className="border p-2 rounded"
-                value={editData.eu.private}
-                onChange={(e)=>{
-                  const val = Number(e.target.value);
-                  setEditData({...editData, eu:{private:val, public:100-val}});
-                }}/>
             </div>
 
-            <p className="text-xs text-slate-500 mt-4 mb-2">Last Updated</p>
-            <input className="border p-2 w-full rounded"
-              value={editData.lastUpdated}
-              onChange={(e)=>setEditData({...editData, lastUpdated:e.target.value})}/>
+            {/* Modal Content - Tablo */}
+            <div className="flex-1 overflow-auto p-6">
+              <table className="w-full text-[11px] border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b-2 text-slate-500 uppercase tracking-widest font-bold">
+                    <th className="p-4 text-left w-1/3 text-slate-400">[EUR million]</th>
+                    <th className="p-4 text-right">Guarantees</th>
+                    <th className="p-4 text-right">Grants</th>
+                    <th className="p-4 text-right text-blue-700">Grand Total</th>
+                    <th className="p-4 text-right">Multiplier</th>
+                    <th className="p-4 text-right">Total investments</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y text-slate-700">
+                  {(isBudgetEditing ? tempTable : tableData).map((row, index) => {
+                    const grandTotal = (row.guarantees || 0) + (row.grants || 0);
+                    const hasValues = row.guarantees !== null || row.grants !== null;
 
-            <div className="flex justify-end mt-4 gap-2">
-              <button onClick={()=>setIsCMSOpen(false)}>Cancel</button>
-              <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 flex gap-2">
-                <Save size={16}/> Save
-              </button>
+                    return (
+                      <tr key={index} className={`
+                        hover:bg-slate-50/50 transition
+                        ${row.type === 'header' ? 'bg-slate-100/80 font-bold text-slate-900' : ''}
+                        ${row.type === 'group' ? 'bg-slate-50/50 font-semibold text-slate-800' : ''}
+                        ${row.type === 'summary-allocated' ? 'bg-slate-800 text-white font-bold' : ''}
+                        ${row.type === 'summary-unallocated' ? 'font-bold' : ''}
+                      `}>
+                        {/* Etiket Hücresi */}
+                        <td className={`p-2 ${
+                          row.type === 'indent-1-italic' ? 'pl-8 italic text-slate-500' : 
+                          row.type === 'indent-2' ? 'pl-12 text-slate-500' : ''
+                        }`}>
+                          {isBudgetEditing ? (
+                            <input 
+                              className="w-full bg-transparent border-b border-blue-200 outline-none focus:border-blue-500 text-slate-900"
+                              value={row.label}
+                              onChange={(e) => {
+                                const newTable = [...tempTable];
+                                newTable[index].label = e.target.value;
+                                setTempTable(newTable);
+                              }}
+                            />
+                          ) : row.label}
+                        </td>
+                        
+                        {/* Guarantees Hücresi */}
+                        <td className="p-2 text-right">
+                          {isBudgetEditing ? (
+                            <input 
+                              type="number" 
+                              className="w-24 bg-blue-50/30 border border-blue-100 rounded px-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-slate-800" 
+                              value={row.guarantees || 0} 
+                              onChange={(e) => {
+                                const newTable = [...tempTable];
+                                newTable[index].guarantees = parseFloat(e.target.value) || 0;
+                                setTempTable(newTable);
+                              }}
+                            />
+                          ) : formatNum(row.guarantees)}
+                        </td>
+
+                        {/* Grants Hücresi */}
+                        <td className="p-2 text-right">
+                          {isBudgetEditing ? (
+                            <input 
+                              type="number" 
+                              className="w-24 bg-blue-50/30 border border-blue-100 rounded px-1 text-right focus:ring-1 focus:ring-blue-400 outline-none text-slate-800" 
+                              value={row.grants || 0} 
+                              onChange={(e) => {
+                                const newTable = [...tempTable];
+                                newTable[index].grants = parseFloat(e.target.value) || 0;
+                                setTempTable(newTable);
+                              }}
+                            />
+                          ) : formatNum(row.grants)}
+                        </td>
+
+                        {/* Grand Total */}
+                        <td className={`p-3 text-right font-bold ${row.type === 'summary-allocated' ? 'text-blue-300' : (row.type === 'summary-unallocated' ? 'text-red-600 bg-red-50' : 'text-blue-800 bg-blue-50/20')}`}>
+                          {hasValues ? formatNum(grandTotal) : "—"}
+                        </td>
+
+                        {/* Multiplier Hücresi */}
+                        <td className="p-2 text-right">
+                          {isBudgetEditing ? (
+                            <input 
+                              type="number" step="0.01"
+                              className="w-16 bg-emerald-50/30 border border-emerald-100 rounded px-1 text-right focus:ring-1 focus:ring-emerald-400 outline-none text-slate-800" 
+                              value={row.multiplier || 0} 
+                              onChange={(e) => {
+                                const newTable = [...tempTable];
+                                newTable[index].multiplier = parseFloat(e.target.value) || 0;
+                                setTempTable(newTable);
+                              }}
+                            />
+                          ) : (row.multiplier ? `${row.multiplier}x` : "—")}
+                        </td>
+
+                        {/* Total Investments Hücresi */}
+                        <td className="p-2 text-right font-semibold">
+                          {isBudgetEditing ? (
+                            <input 
+                              type="number" 
+                              className="w-24 bg-slate-50 border border-slate-200 rounded px-1 text-right focus:ring-1 focus:ring-slate-400 outline-none text-slate-800" 
+                              value={row.totalInvestments || 0} 
+                              onChange={(e) => {
+                                const newTable = [...tempTable];
+                                newTable[index].totalInvestments = parseFloat(e.target.value) || 0;
+                                setTempTable(newTable);
+                              }}
+                            />
+                          ) : formatNum(row.totalInvestments)}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
             </div>
 
+            <div className="p-6 border-t bg-slate-50 text-[10px] text-slate-400 flex justify-between items-center italic">
+              <span>* All values are in EUR million. Values updated from official report data.</span>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* --- DASHBOARD CMS MODAL (Genel Metrikler) --- */}
+      {isDashboardCMSOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-6 z-50">
+          <div className="bg-white p-8 w-full max-w-2xl rounded-3xl shadow-2xl overflow-auto max-h-[90vh]">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="font-bold text-2xl text-slate-800">Dashboard CMS</h2>
+              <button onClick={() => setIsDashboardCMSOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition"><X/></button>
+            </div>
+
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Expected Mobilised</label>
+                  <input className="border-2 p-3 w-full rounded-xl focus:border-blue-500 outline-none" 
+                    value={tempDashboard.investmentMobilised} 
+                    onChange={(e)=>setTempDashboard({...tempDashboard, investmentMobilised:e.target.value})}/>
+                </div>
+                <div>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Main Multiplier</label>
+                  <input className="border-2 p-3 w-full rounded-xl focus:border-blue-500 outline-none" 
+                    value={tempDashboard.multiplier} 
+                    onChange={(e)=>setTempDashboard({...tempDashboard, multiplier:e.target.value})}/>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Allocations Overview</label>
+                {tempDashboard.allocations.map((a,i)=>(
+                  <div key={i} className="grid grid-cols-3 gap-2 mb-3">
+                    <input className="border p-2 rounded-lg text-sm" value={a.label} onChange={(e)=>{
+                      const arr=[...tempDashboard.allocations]; arr[i].label=e.target.value; setTempDashboard({...tempDashboard, allocations:arr});
+                    }} placeholder="Label"/>
+                    <input className="border p-2 rounded-lg text-sm" value={a.value} onChange={(e)=>{
+                      const arr=[...tempDashboard.allocations]; arr[i].value=e.target.value; setTempDashboard({...tempDashboard, allocations:arr});
+                    }} placeholder="Value"/>
+                    <input className="border p-2 rounded-lg text-sm" type="number" value={a.percent} onChange={(e)=>{
+                      const arr=[...tempDashboard.allocations]; arr[i].percent=Number(e.target.value); setTempDashboard({...tempDashboard, allocations:arr});
+                    }} placeholder="Percent"/>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block">Targets Progress (%)</label>
+                {tempDashboard.targets.map((t,i)=>(
+                  <div key={i} className="grid grid-cols-3 gap-2 mb-3">
+                    <input className="border p-2 rounded-lg text-sm" value={t.label} readOnly/>
+                    <input className="border p-2 rounded-lg text-sm" type="number" value={t.actual} onChange={(e)=>{
+                      const arr=[...tempDashboard.targets]; arr[i].actual=Number(e.target.value); setTempDashboard({...tempDashboard, targets:arr});
+                    }} placeholder="Actual %"/>
+                    <input className="border p-2 rounded-lg text-sm" type="number" value={t.target} onChange={(e)=>{
+                      const arr=[...tempDashboard.targets]; arr[i].target=Number(e.target.value); setTempDashboard({...tempDashboard, targets:arr});
+                    }} placeholder="Target %"/>
+                  </div>
+                ))}
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase mb-2 block">EU Contribution Share (%)</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-blue-600">Public:</span>
+                    <input className="border p-2 rounded-lg flex-1" type="number" value={tempDashboard.eu.public} onChange={(e)=>{
+                      const v = Number(e.target.value); setTempDashboard({...tempDashboard, eu:{public:v, private: 100-v}});
+                    }}/>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-bold text-rose-600">Private:</span>
+                    <input className="border p-2 rounded-lg flex-1" type="number" value={tempDashboard.eu.private} onChange={(e)=>{
+                      const v = Number(e.target.value); setTempDashboard({...tempDashboard, eu:{private:v, public: 100-v}});
+                    }}/>
+                  </div>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Last Updated Date</label>
+                <input className="border p-2 w-full rounded-lg text-sm" value={tempDashboard.lastUpdated} onChange={(e)=>setTempDashboard({...tempDashboard, lastUpdated:e.target.value})}/>
+              </div>
+
+              <div className="flex justify-end pt-4 gap-3">
+                <button onClick={()=>setIsDashboardCMSOpen(false)} className="px-6 py-2 rounded-xl border font-bold text-slate-500 hover:bg-slate-50 transition">Cancel</button>
+                <button onClick={handleSaveAll} className="bg-blue-600 text-white px-8 py-2 rounded-xl font-bold flex items-center gap-2 shadow-lg hover:bg-blue-700 active:scale-95 transition">
+                  <Save size={18}/> Save All Dashboard Data
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
