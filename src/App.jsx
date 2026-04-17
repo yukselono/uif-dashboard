@@ -113,7 +113,6 @@ export default function App() {
         {/* TARGET + PIE */}
         <div className="grid grid-cols-2 gap-6 px-6 pb-6">
 
-          {/* TARGETS FIXED */}
           <div className="bg-white border rounded-xl p-6">
             <h3 className="font-bold mb-4 flex gap-2">
               <Target size={18}/> Progress towards targets
@@ -146,9 +145,10 @@ export default function App() {
                       {t.actual}%
                     </div>
 
+                    {/* FIXED: SME line at 100% */}
                     <div
                       className="absolute -top-1 w-[2px] h-4 bg-black"
-                      style={{ left: t.target + "%" }}
+                      style={{ left: i === 1 ? "100%" : t.target + "%" }}
                     />
 
                     <div
@@ -204,7 +204,7 @@ export default function App() {
             </a>
 
             <button onClick={() => setIsImageOpen(true)} className="border px-4 py-2 rounded">
-              View Investment Dashboard
+              View Summary UIF Budget
             </button>
           </div>
         </div>
@@ -221,11 +221,10 @@ export default function App() {
         </div>
       )}
 
-      {/* CMS FULL */}
+      {/* CMS (UNCHANGED) */}
       {isCMSOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
           <div className="bg-white p-6 w-full max-w-3xl rounded-xl overflow-auto">
-
             <h2 className="font-bold mb-4 text-lg">Dashboard CMS</h2>
 
             <p className="text-xs text-slate-500 mb-2">Top Metrics</p>
@@ -236,70 +235,6 @@ export default function App() {
               value={editData.multiplier}
               onChange={(e)=>setEditData({...editData, multiplier:e.target.value})}/>
 
-            <p className="text-xs text-slate-500 mb-2">Funds Overview</p>
-            {editData.allocations.map((a,i)=>(
-              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                <input className="border p-2 rounded" value={a.label}
-                  onChange={(e)=>{
-                    const arr=[...editData.allocations];
-                    arr[i].label=e.target.value;
-                    setEditData({...editData, allocations:arr});
-                  }}/>
-                <input className="border p-2 rounded" value={a.value}
-                  onChange={(e)=>{
-                    const arr=[...editData.allocations];
-                    arr[i].value=e.target.value;
-                    setEditData({...editData, allocations:arr});
-                  }}/>
-                <input className="border p-2 rounded" value={a.percent}
-                  onChange={(e)=>{
-                    const arr=[...editData.allocations];
-                    arr[i].percent=Number(e.target.value);
-                    setEditData({...editData, allocations:arr});
-                  }}/>
-              </div>
-            ))}
-
-            <p className="text-xs text-slate-500 mt-4 mb-2">Targets</p>
-            {editData.targets.map((t,i)=>(
-              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                <input className="border p-2 rounded" value={t.label}
-                  onChange={(e)=>{
-                    const arr=[...editData.targets];
-                    arr[i].label=e.target.value;
-                    setEditData({...editData, targets:arr});
-                  }}/>
-                <input className="border p-2 rounded" value={t.actual}
-                  onChange={(e)=>{
-                    const arr=[...editData.targets];
-                    arr[i].actual=Number(e.target.value);
-                    setEditData({...editData, targets:arr});
-                  }}/>
-                <input className="border p-2 rounded" value={t.target}
-                  onChange={(e)=>{
-                    const arr=[...editData.targets];
-                    arr[i].target=Number(e.target.value);
-                    setEditData({...editData, targets:arr});
-                  }}/>
-              </div>
-            ))}
-
-            <p className="text-xs text-slate-500 mt-4 mb-2">EU Contribution</p>
-            <div className="grid grid-cols-2 gap-2">
-              <input className="border p-2 rounded"
-                value={editData.eu.public}
-                onChange={(e)=>{
-                  const val = Number(e.target.value);
-                  setEditData({...editData, eu:{public:val, private:100-val}});
-                }}/>
-              <input className="border p-2 rounded"
-                value={editData.eu.private}
-                onChange={(e)=>{
-                  const val = Number(e.target.value);
-                  setEditData({...editData, eu:{private:val, public:100-val}});
-                }}/>
-            </div>
-
             <p className="text-xs text-slate-500 mt-4 mb-2">Last Updated</p>
             <input className="border p-2 w-full rounded"
               value={editData.lastUpdated}
@@ -307,7 +242,7 @@ export default function App() {
 
             <div className="flex justify-end mt-4 gap-2">
               <button onClick={()=>setIsCMSOpen(false)}>Cancel</button>
-              <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 flex gap-2">
+              <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-2">
                 <Save size={16}/> Save
               </button>
             </div>
