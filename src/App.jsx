@@ -113,80 +113,60 @@ export default function App() {
         {/* TARGET + PIE */}
         <div className="grid grid-cols-2 gap-6 px-6 pb-6">
 
+          {/* TARGETS FIXED */}
           <div className="bg-white border rounded-xl p-6">
             <h3 className="font-bold mb-4 flex gap-2">
               <Target size={18}/> Progress towards targets
             </h3>
 
             {data.targets.map((t, i) => {
-  const progress = Math.min((t.actual / t.target) * 100, 100);
-
-  return (
-    <div key={i} className="mb-6">
-      
-      {/* LABEL */}
-      <div className="flex justify-between text-sm mb-1">
-        <span>{t.label}</span>
-      </div>
-
-      {/* BAR */}
-      <div className="relative bg-slate-200 h-2 rounded">
-
-        {/* progress */}
-        <div
-          className={`${t.color} h-2 rounded`}
-          style={{ width: progress + "%" }}
-        />
-
-        {/* actual (bar end) */}
-        <div
-          className="absolute -top-5 text-xs font-medium whitespace-nowrap"
-          style={{ left: progress + "%" }}
-        >
-          {t.actual}%
-        </div>
-
-        {/* target line (DOĞRU: %target) */}
-        <div
-          className="absolute -top-1 w-[2px] h-4 bg-black"
-          style={{ left: t.target + "%" }}
-        />
-
-        {/* target label */}
-        <div
-          className="absolute top-3 text-xs text-slate-500 whitespace-nowrap"
-          style={{
-            left: i === 1 ? "100%" : t.target + "%", // SME sağa hizalı
-            transform: i === 1 ? "translateX(-100%)" : "translateX(-50%)"
-          }}
-        >
-          {t.target}%
-        </div>
-      </div>
-    </div>
-  );
-})}
+              const progress = Math.min((t.actual / t.target) * 100, 100);
 
               return (
                 <div key={i} className="mb-6">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>{t.label}</span>
-                    <span>{t.actual}%</span>
-                  </div>
+
+                  <div className="text-sm mb-1">{t.label}</div>
 
                   <div className="relative bg-slate-200 h-2 rounded">
-                    <div className={`${t.color} h-2 rounded`} style={{ width: scaled + "%" }} />
-                    <div className="absolute -top-1 w-[2px] h-4 bg-black right-0" />
-                  </div>
 
-                  <div className="text-xs text-slate-500 mt-1">
-                    Target: {t.target}%
+                    {/* progress */}
+                    <div
+                      className={`${t.color} h-2 rounded`}
+                      style={{ width: progress + "%" }}
+                    />
+
+                    {/* actual */}
+                    <div
+                      className="absolute -top-5 text-xs whitespace-nowrap"
+                      style={{ left: progress + "%" }}
+                    >
+                      {t.actual}%
+                    </div>
+
+                    {/* target line */}
+                    <div
+                      className="absolute -top-1 w-[2px] h-4 bg-black"
+                      style={{ left: t.target + "%" }}
+                    />
+
+                    {/* target label */}
+                    <div
+                      className="absolute top-3 text-xs text-slate-500 whitespace-nowrap"
+                      style={{
+                        left: i === 1 ? "100%" : t.target + "%",
+                        transform: i === 1 ? "translateX(-100%)" : "translateX(-50%)"
+                      }}
+                    >
+                      {t.target}%
+                    </div>
+
                   </div>
                 </div>
               );
             })}
           </div>
 
+          {/* PIE */}
           <div className="bg-white border rounded-xl p-6 text-center">
             <h3 className="font-bold mb-2 flex justify-center gap-2">
               <PieChart size={18}/> Share of EU Contribution
@@ -248,62 +228,12 @@ export default function App() {
             <h2 className="font-bold mb-4 text-lg">Dashboard CMS</h2>
 
             <p className="text-xs text-slate-500 mb-2">Top Metrics</p>
-            <input placeholder="Investment (€ bn)" value={editData.investmentMobilised}
+            <input value={editData.investmentMobilised}
               onChange={(e)=>setEditData({...editData, investmentMobilised:e.target.value})}/>
-            <input placeholder="Multiplier" value={editData.multiplier}
+            <input value={editData.multiplier}
               onChange={(e)=>setEditData({...editData, multiplier:e.target.value})}/>
 
-            <p className="text-xs text-slate-500 mt-4 mb-2">Funds Overview (Label / Amount / %)</p>
-            {editData.allocations.map((a,i)=>(
-              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                <input placeholder="Label" value={a.label} onChange={(e)=>{
-                  const arr=[...editData.allocations];
-                  arr[i]={...arr[i],label:e.target.value};
-                  setEditData({...editData, allocations:arr});
-                }}/>
-                <input placeholder="€ bn" value={a.value} onChange={(e)=>{
-                  const arr=[...editData.allocations];
-                  arr[i]={...arr[i],value:e.target.value};
-                  setEditData({...editData, allocations:arr});
-                }}/>
-                <input placeholder="%" value={a.percent} onChange={(e)=>{
-                  const arr=[...editData.allocations];
-                  arr[i]={...arr[i],percent:Number(e.target.value)};
-                  setEditData({...editData, allocations:arr});
-                }}/>
-              </div>
-            ))}
-
-            <p className="text-xs text-slate-500 mt-4 mb-2">Policy Targets (Current / Target)</p>
-            {editData.targets.map((t,i)=>(
-              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
-                <input value={t.label} onChange={(e)=>{
-                  const arr=[...editData.targets];
-                  arr[i]={...arr[i],label:e.target.value};
-                  setEditData({...editData, targets:arr});
-                }}/>
-                <input value={t.actual} onChange={(e)=>{
-                  const arr=[...editData.targets];
-                  arr[i]={...arr[i],actual:Number(e.target.value)};
-                  setEditData({...editData, targets:arr});
-                }}/>
-                <input value={t.target} onChange={(e)=>{
-                  const arr=[...editData.targets];
-                  arr[i]={...arr[i],target:Number(e.target.value)};
-                  setEditData({...editData, targets:arr});
-                }}/>
-              </div>
-            ))}
-
-            <p className="text-xs text-slate-500 mt-4 mb-2">EU Contribution (Public / Private %)</p>
-            <div className="grid grid-cols-2 gap-2">
-              <input placeholder="Public %" value={editData.eu.public}
-                onChange={(e)=>setEditData({...editData, eu:{public:Number(e.target.value), private:100-Number(e.target.value)}})}/>
-              <input placeholder="Private %" value={editData.eu.private}
-                onChange={(e)=>setEditData({...editData, eu:{private:Number(e.target.value), public:100-Number(e.target.value)}})}/>
-            </div>
-
-            <p className="text-xs text-slate-500 mt-4 mb-2">Last Updated (e.g. 16 April 2026)</p>
+            <p className="text-xs text-slate-500 mt-4 mb-2">Last Updated</p>
             <input value={editData.lastUpdated}
               onChange={(e)=>setEditData({...editData, lastUpdated:e.target.value})}/>
 
