@@ -21,6 +21,7 @@ const defaultDashboardData = {
   allocations: [
     { label: "Funds Allocated", percent: 88.3, value: "€8.4 bn", color: "bg-indigo-600" },
     { label: "Programmes signed", percent: 44.2, value: "€4.2 bn", color: "bg-blue-500" },
+    { label: "Guarantees deployed", percent: 39.4, value: "€2.7 bn", color: "bg-cyan-600" },
     { label: "Remaining funds", percent: 11.7, value: "€1.1 bn", color: "bg-amber-400" },
   ],
   targets: [
