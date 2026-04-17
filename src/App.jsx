@@ -125,31 +125,32 @@ export default function App() {
               return (
                 <div key={i} className="mb-6">
 
-                  <div className="text-sm mb-1">{t.label}</div>
+                  <div className="flex justify-between text-sm mb-2">
+                    <span>{t.label}</span>
+                  </div>
 
-                  <div className="relative bg-slate-200 h-2 rounded">
+                  <div className="relative bg-slate-200 h-2 rounded mt-4">
 
-                    {/* progress */}
                     <div
                       className={`${t.color} h-2 rounded`}
                       style={{ width: progress + "%" }}
                     />
 
-                    {/* actual */}
                     <div
                       className="absolute -top-5 text-xs whitespace-nowrap"
-                      style={{ left: progress + "%" }}
+                      style={{
+                        left: progress + "%",
+                        transform: "translateX(-50%)"
+                      }}
                     >
                       {t.actual}%
                     </div>
 
-                    {/* target line */}
                     <div
                       className="absolute -top-1 w-[2px] h-4 bg-black"
                       style={{ left: t.target + "%" }}
                     />
 
-                    {/* target label */}
                     <div
                       className="absolute top-3 text-xs text-slate-500 whitespace-nowrap"
                       style={{
@@ -220,7 +221,7 @@ export default function App() {
         </div>
       )}
 
-      {/* CMS */}
+      {/* CMS FULL */}
       {isCMSOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
           <div className="bg-white p-6 w-full max-w-3xl rounded-xl overflow-auto">
@@ -228,18 +229,85 @@ export default function App() {
             <h2 className="font-bold mb-4 text-lg">Dashboard CMS</h2>
 
             <p className="text-xs text-slate-500 mb-2">Top Metrics</p>
-            <input value={editData.investmentMobilised}
+            <input className="border p-2 w-full mb-2 rounded"
+              value={editData.investmentMobilised}
               onChange={(e)=>setEditData({...editData, investmentMobilised:e.target.value})}/>
-            <input value={editData.multiplier}
+            <input className="border p-2 w-full mb-4 rounded"
+              value={editData.multiplier}
               onChange={(e)=>setEditData({...editData, multiplier:e.target.value})}/>
 
+            <p className="text-xs text-slate-500 mb-2">Funds Overview</p>
+            {editData.allocations.map((a,i)=>(
+              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
+                <input className="border p-2 rounded" value={a.label}
+                  onChange={(e)=>{
+                    const arr=[...editData.allocations];
+                    arr[i].label=e.target.value;
+                    setEditData({...editData, allocations:arr});
+                  }}/>
+                <input className="border p-2 rounded" value={a.value}
+                  onChange={(e)=>{
+                    const arr=[...editData.allocations];
+                    arr[i].value=e.target.value;
+                    setEditData({...editData, allocations:arr});
+                  }}/>
+                <input className="border p-2 rounded" value={a.percent}
+                  onChange={(e)=>{
+                    const arr=[...editData.allocations];
+                    arr[i].percent=Number(e.target.value);
+                    setEditData({...editData, allocations:arr});
+                  }}/>
+              </div>
+            ))}
+
+            <p className="text-xs text-slate-500 mt-4 mb-2">Targets</p>
+            {editData.targets.map((t,i)=>(
+              <div key={i} className="grid grid-cols-3 gap-2 mb-2">
+                <input className="border p-2 rounded" value={t.label}
+                  onChange={(e)=>{
+                    const arr=[...editData.targets];
+                    arr[i].label=e.target.value;
+                    setEditData({...editData, targets:arr});
+                  }}/>
+                <input className="border p-2 rounded" value={t.actual}
+                  onChange={(e)=>{
+                    const arr=[...editData.targets];
+                    arr[i].actual=Number(e.target.value);
+                    setEditData({...editData, targets:arr});
+                  }}/>
+                <input className="border p-2 rounded" value={t.target}
+                  onChange={(e)=>{
+                    const arr=[...editData.targets];
+                    arr[i].target=Number(e.target.value);
+                    setEditData({...editData, targets:arr});
+                  }}/>
+              </div>
+            ))}
+
+            <p className="text-xs text-slate-500 mt-4 mb-2">EU Contribution</p>
+            <div className="grid grid-cols-2 gap-2">
+              <input className="border p-2 rounded"
+                value={editData.eu.public}
+                onChange={(e)=>{
+                  const val = Number(e.target.value);
+                  setEditData({...editData, eu:{public:val, private:100-val}});
+                }}/>
+              <input className="border p-2 rounded"
+                value={editData.eu.private}
+                onChange={(e)=>{
+                  const val = Number(e.target.value);
+                  setEditData({...editData, eu:{private:val, public:100-val}});
+                }}/>
+            </div>
+
             <p className="text-xs text-slate-500 mt-4 mb-2">Last Updated</p>
-            <input value={editData.lastUpdated}
+            <input className="border p-2 w-full rounded"
+              value={editData.lastUpdated}
               onChange={(e)=>setEditData({...editData, lastUpdated:e.target.value})}/>
 
             <div className="flex justify-end mt-4 gap-2">
               <button onClick={()=>setIsCMSOpen(false)}>Cancel</button>
-              <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-2">
+              <button onClick={handleSave} className="bg-blue-600 text-white px-4 py-2 flex gap-2">
                 <Save size={16}/> Save
               </button>
             </div>
