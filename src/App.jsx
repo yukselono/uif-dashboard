@@ -211,8 +211,6 @@ export default function App() {
       </div>
 
       {/* IMAGE MODAL */}
-      // SADECE BU BLOĞU KENDİ APP.JSX'İNDEKİ IMAGE MODAL İLE DEĞİŞTİR
-
 {isImageOpen && (
   <div
     className="fixed inset-0 bg-black/60 flex items-center justify-center p-6 z-50"
@@ -229,24 +227,25 @@ export default function App() {
         <button onClick={() => setIsImageOpen(false)}>✕</button>
       </div>
 
-      {/* TABLE */}
       <div className="overflow-x-auto">
         <table className="w-full text-xs border-collapse">
+
           <thead>
-            <tr className="bg-slate-50 border-b-2">
-              <th className="p-3 text-left">[EUR million]</th>
+            <tr className="bg-slate-50 border-b-2 text-slate-500 uppercase tracking-wide text-[10px]">
+              <th className="p-3 text-left w-1/3">[EUR million]</th>
               <th className="p-3 text-right">Guarantees</th>
               <th className="p-3 text-right">Grants</th>
-              <th className="p-3 text-right text-blue-700">GRAND TOTAL</th>
+              <th className="p-3 text-right text-blue-700">Grand Total</th>
               <th className="p-3 text-right">Multiplier</th>
               <th className="p-3 text-right">Total investments</th>
             </tr>
           </thead>
 
-          <tbody className="divide-y">
+          <tbody className="divide-y text-slate-700">
 
+            {/* HEADER */}
             <tr className="bg-slate-100 font-bold">
-              <td className="p-3">UIF BUDGET</td>
+              <td className="p-3">1. UIF BUDGET</td>
               <td className="p-3 text-right">7,800.00</td>
               <td className="p-3 text-right">1,741.00</td>
               <td className="p-3 text-right text-blue-700">9,541.00</td>
@@ -254,68 +253,142 @@ export default function App() {
               <td className="p-3 text-right text-slate-400">—</td>
             </tr>
 
-            <tr>
-              <td className="p-3 font-medium">Top-ups</td>
+            {/* GROUP */}
+            <tr className="bg-slate-50 font-semibold">
+              <td className="p-3">2. MS AND OTHER TOP-UPS</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+            </tr>
+
+            <tr className="italic text-slate-500">
+              <td className="p-3 pl-8">Total available (under MS and other top-ups)</td>
               <td className="p-3 text-right">990.00</td>
               <td className="p-3 text-right">412.38</td>
-              <td className="p-3 text-right">1,402.38</td>
-              <td className="p-3 text-right text-blue-600">4.54x</td>
+              <td className="p-3 text-right font-semibold">1,402.38</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+            </tr>
+
+            <tr>
+              <td className="p-3 pl-12 text-slate-500">↳ Total MS top-up (contracted)</td>
+              <td className="p-3 text-right">990.00</td>
+              <td className="p-3 text-right">412.38</td>
+              <td className="p-3 text-right font-semibold">1,402.38</td>
+              <td className="p-3 text-right text-blue-600">4.54</td>
               <td className="p-3 text-right font-semibold">6,363.95</td>
             </tr>
 
             <tr>
-              <td className="p-3 pl-8 text-slate-500">↳ Top-ups (contracted)</td>
-              <td className="p-3 text-right">990.00</td>
-              <td className="p-3 text-right">412.38</td>
-              <td className="p-3 text-right">1,402.38</td>
-              <td className="p-3 text-right text-blue-600">4.54x</td>
-              <td className="p-3 text-right font-semibold">6,363.95</td>
+              <td className="p-3 pl-12 text-slate-500">↳ Total other top-up (contracted)</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+            </tr>
+
+            {/* EIB */}
+            <tr className="bg-slate-50 font-semibold">
+              <td className="p-3">3. EIB EXCLUSIVE WINDOW</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+            </tr>
+
+            <tr className="italic text-slate-500">
+              <td className="p-3 pl-8">EIB exclusive window (available)</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
             </tr>
 
             <tr>
-              <td className="p-3 font-medium">EIB exclusive window (assigned)</td>
+              <td className="p-3 pl-12 text-slate-500">↳ EIB exclusive window (assigned)</td>
               <td className="p-3 text-right">2,378.64</td>
               <td className="p-3 text-right">149.75</td>
-              <td className="p-3 text-right">2,528.39</td>
-              <td className="p-3 text-right text-blue-600">1.22x</td>
+              <td className="p-3 text-right font-semibold">2,528.39</td>
+              <td className="p-3 text-right text-blue-600">1.22</td>
               <td className="p-3 text-right font-semibold">3,076.66</td>
             </tr>
 
+            {/* OPEN CALL */}
+            <tr className="bg-slate-50 font-semibold">
+              <td className="p-3">4. OPEN CALL</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+            </tr>
+
+            <tr className="italic text-slate-500">
+              <td className="p-3 pl-8">Open call (available)</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
+            </tr>
+
             <tr>
-              <td className="p-3 font-medium">Open call (allocated)</td>
+              <td className="p-3 pl-12 text-slate-500">↳ Open call (allocated)</td>
               <td className="p-3 text-right">2,985.50</td>
               <td className="p-3 text-right">810.49</td>
-              <td className="p-3 text-right">3,795.99</td>
-              <td className="p-3 text-right text-blue-600">3.14x</td>
+              <td className="p-3 text-right font-semibold">3,795.99</td>
+              <td className="p-3 text-right text-blue-600">3.14</td>
               <td className="p-3 text-right font-semibold">11,905.07</td>
             </tr>
 
             <tr>
-              <td className="p-3 pl-8 text-slate-500">↳ Open Call (contracted)</td>
+              <td className="p-3 pl-12 text-slate-500">↳ Open call (contracted)</td>
               <td className="p-3 text-right">844.50</td>
               <td className="p-3 text-right">88.04</td>
-              <td className="p-3 text-right">932.54</td>
-              <td className="p-3 text-right text-blue-600">2.79x</td>
+              <td className="p-3 text-right font-semibold">932.54</td>
+              <td className="p-3 text-right text-blue-600">2.79</td>
               <td className="p-3 text-right font-semibold">2,599.93</td>
             </tr>
 
             <tr>
-              <td className="p-3 pl-8 text-slate-500">↳ Open Call (approved)</td>
+              <td className="p-3 pl-12 text-slate-500">↳ Open call (approved)</td>
               <td className="p-3 text-right">2,141.00</td>
               <td className="p-3 text-right">722.45</td>
-              <td className="p-3 text-right">2,863.45</td>
-              <td className="p-3 text-right text-blue-600">3.25x</td>
+              <td className="p-3 text-right font-semibold">2,863.45</td>
+              <td className="p-3 text-right text-blue-600">3.25</td>
               <td className="p-3 text-right font-semibold">9,305.14</td>
+            </tr>
+
+            {/* SUMMARY */}
+            <tr className="bg-slate-100 font-bold">
+              <td className="p-3">TOTAL ALLOCATED AMOUNT</td>
+              <td className="p-3 text-right">6,354.14</td>
+              <td className="p-3 text-right">1,372.63</td>
+              <td className="p-3 text-right">7,726.77</td>
+              <td className="p-3 text-right text-blue-600">3.20</td>
+              <td className="p-3 text-right">21,345.68</td>
+            </tr>
+
+            <tr className="font-bold">
+              <td className="p-3">TOTAL UNALLOCATED AMOUNT</td>
+              <td className="p-3 text-right text-red-600">1,445.86</td>
+              <td className="p-3 text-right text-red-600">368.37</td>
+              <td className="p-3 text-right text-red-600">1,814.23</td>
+              <td className="p-3 text-right">—</td>
+              <td className="p-3 text-right">—</td>
             </tr>
 
           </tbody>
         </table>
       </div>
 
-      {/* FOOTER */}
-      <div className="mt-6 text-xs text-slate-400 flex justify-between">
-        <span>* Values in EUR million</span>
-        <span className="italic">Internal Document</span>
+      <div className="mt-6 text-xs text-slate-400 italic">
+        * Values in EUR million.
       </div>
 
     </div>
