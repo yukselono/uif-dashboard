@@ -7,7 +7,8 @@ import {
   Target,
   PieChart,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
+  Edit
 } from "lucide-react";
 
 const defaultData = {
@@ -24,12 +25,24 @@ const defaultData = {
     { label: "SME Target", actual: 9.3, target: 15, color: "bg-amber-500" },
   ],
   eu: { public: 57, private: 43 },
-  lastUpdated: "16 April 2026"
+  lastUpdated: "16 April 2026",
+
+  // 🔥 TABLE DATA
+  table: [
+    ["UIF BUDGET", "7,800.00", "1,741.00", "9,541.00", "—", "—"],
+    ["Top-ups", "990.00", "412.38", "1,402.38", "4.54x", "6,363.95"],
+    ["↳ Top-ups (contracted)", "990.00", "412.38", "1,402.38", "4.54x", "6,363.95"],
+    ["EIB exclusive window (assigned)", "2,378.64", "149.75", "2,528.39", "1.22x", "3,076.66"],
+    ["Open call (allocated)", "2,985.50", "810.49", "3,795.99", "3.14x", "11,905.07"],
+    ["↳ Open Call (contracted)", "844.50", "88.04", "932.54", "2.79x", "2,599.93"],
+    ["↳ Open Call (approved)", "2,141.00", "722.45", "2,863.45", "3.25x", "9,305.14"]
+  ]
 };
 
 export default function App() {
   const [isCMSOpen, setIsCMSOpen] = useState(false);
   const [isTableOpen, setIsTableOpen] = useState(false);
+  const [isTableEdit, setIsTableEdit] = useState(false);
   const [showMore, setShowMore] = useState(false);
 
   const [data, setData] = useState(() => {
@@ -183,79 +196,56 @@ export default function App() {
         </div>
       </div>
 
-      {/* FULL TABLE MODAL */}
+      {/* TABLE MODAL WITH EDIT */}
       {isTableOpen && (
         <div className="fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50"
-             onClick={() => setIsTableOpen(false)}>
-          <div className="bg-white rounded-2xl w-full max-w-7xl max-h-[90vh] overflow-auto p-6"
-               onClick={(e) => e.stopPropagation()}>
+          onClick={() => setIsTableOpen(false)}>
+          <div className="bg-white w-full max-w-7xl p-6 rounded-xl overflow-auto"
+            onClick={(e) => e.stopPropagation()}>
 
-            <h2 className="font-bold mb-4">UIF Budget Overview</h2>
+            <div className="flex justify-between mb-4">
+              <h2 className="font-bold text-lg">UIF Budget Overview</h2>
+              <div className="flex gap-2">
+                <button onClick={() => setIsTableEdit(!isTableEdit)}
+                  className="border px-3 py-1 flex gap-1">
+                  <Edit size={14}/> Edit
+                </button>
+                <button onClick={() => setIsTableOpen(false)}>✕</button>
+              </div>
+            </div>
 
             <table className="w-full text-sm border">
-              <thead className="bg-orange-200">
+              <thead className="bg-slate-100">
                 <tr>
-                  <th className="border p-2">UIF Budget (EUR million)</th>
-                  <th className="border p-2">Guarantees</th>
-                  <th className="border p-2">Grants</th>
-                  <th className="border p-2">Grand Total</th>
-                  <th className="border p-2">Multiplier</th>
-                  <th className="border p-2">Total Investments</th>
+                  <th className="p-2">Label</th>
+                  <th className="p-2">Guarantees</th>
+                  <th className="p-2">Grants</th>
+                  <th className="p-2">Total</th>
+                  <th className="p-2">Multiplier</th>
+                  <th className="p-2">Investments</th>
                 </tr>
               </thead>
 
               <tbody>
-                <tr className="bg-blue-100 font-semibold">
-                  <td className="border p-2">UIF Budget</td>
-                  <td className="border p-2">7,800.0</td>
-                  <td className="border p-2">1,741.0</td>
-                  <td className="border p-2">9,541.0</td>
-                  <td></td><td></td>
-                </tr>
-
-                <tr>
-                  <td className="border p-2">Top-ups</td>
-                  <td className="border p-2">990.0</td>
-                  <td className="border p-2">412.4</td>
-                  <td className="border p-2">1,402.4</td>
-                  <td className="border p-2">4.5</td>
-                  <td className="border p-2">6,364.0</td>
-                </tr>
-
-                <tr>
-                  <td className="border p-2">Top-ups (contracted)</td>
-                  <td className="border p-2">990.0</td>
-                  <td className="border p-2">412.4</td>
-                  <td className="border p-2">1,402.4</td>
-                  <td className="border p-2">4.5</td>
-                  <td className="border p-2">6,364.0</td>
-                </tr>
-
-                <tr>
-                  <td className="border p-2">EIB exclusive window</td>
-                  <td className="border p-2">2,378.6</td>
-                  <td className="border p-2">149.8</td>
-                  <td className="border p-2">2,528.4</td>
-                  <td className="border p-2">1.2</td>
-                  <td className="border p-2">3,076.7</td>
-                </tr>
-
-                <tr className="bg-red-200 font-semibold">
-                  <td className="border p-2">Total allocated</td>
-                  <td className="border p-2">6,879.1</td>
-                  <td className="border p-2">1,542.8</td>
-                  <td className="border p-2">8,421.9</td>
-                  <td className="border p-2">3.0</td>
-                  <td className="border p-2">25,271.6</td>
-                </tr>
-
-                <tr className="bg-gray-100 font-semibold">
-                  <td className="border p-2">Total unallocated</td>
-                  <td className="border p-2">920.9</td>
-                  <td className="border p-2">198.2</td>
-                  <td className="border p-2">1,119.1</td>
-                  <td></td><td></td>
-                </tr>
+                {data.table.map((row, i) => (
+                  <tr key={i}>
+                    {row.map((cell, j) => (
+                      <td key={j} className="border p-2">
+                        {isTableEdit ? (
+                          <input
+                            value={cell}
+                            onChange={(e) => {
+                              const newTable = [...data.table];
+                              newTable[i][j] = e.target.value;
+                              setData({ ...data, table: newTable });
+                            }}
+                            className="w-full border"
+                          />
+                        ) : cell}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
               </tbody>
             </table>
 
@@ -263,10 +253,10 @@ export default function App() {
         </div>
       )}
 
-      {/* CMS FULL WORKING */}
+      {/* FULL CMS */}
       {isCMSOpen && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center">
-          <div className="bg-white p-6 w-full max-w-3xl rounded-xl">
+          <div className="bg-white p-6 w-full max-w-3xl rounded-xl overflow-auto">
 
             <h2 className="font-bold mb-4">Dashboard CMS</h2>
 
@@ -274,24 +264,14 @@ export default function App() {
               onChange={(e)=>setEditData({...editData, investmentMobilised:e.target.value})}/>
             <input value={editData.multiplier}
               onChange={(e)=>setEditData({...editData, multiplier:e.target.value})}/>
+            <input value={editData.lastUpdated}
+              onChange={(e)=>setEditData({...editData, lastUpdated:e.target.value})}/>
 
             {editData.allocations.map((a,i)=>(
               <div key={i} className="grid grid-cols-3 gap-2">
-                <input value={a.label} onChange={(e)=>{
-                  const arr=[...editData.allocations];
-                  arr[i]={...arr[i],label:e.target.value};
-                  setEditData({...editData, allocations:arr});
-                }}/>
-                <input value={a.value} onChange={(e)=>{
-                  const arr=[...editData.allocations];
-                  arr[i]={...arr[i],value:e.target.value};
-                  setEditData({...editData, allocations:arr});
-                }}/>
-                <input value={a.percent} onChange={(e)=>{
-                  const arr=[...editData.allocations];
-                  arr[i]={...arr[i],percent:Number(e.target.value)};
-                  setEditData({...editData, allocations:arr});
-                }}/>
+                <input value={a.label}/>
+                <input value={a.value}/>
+                <input value={a.percent}/>
               </div>
             ))}
 
