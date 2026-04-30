@@ -12,28 +12,50 @@ import {
   X,
   Plus,
   AlertCircle,
-  Download
+  Download,
+  Info,
+  Building,
+  Users
 } from "lucide-react";
 
-// Dashboard metrikleri için başlangıç verileri
+// Dashboard metrikleri için başlangıç verileri (Tooltip'ler ve Yeni Bölümler eklendi)
 const defaultDashboardData = {
   investmentMobilised: "€25.2 bn",
+  investmentMobilisedInfo: "Total estimated investments expected to be mobilised by UIF guarantees and grants.",
   multiplier: "x3.0",
+  multiplierInfo: "Ratio of total expected investments to the total UIF contribution.",
+  fundsTotals: { guarantees: "€7.8 bn", grants: "€1.74 bn" },
   allocations: [
-    { label: "Funds Allocated", percent: 88.3, value: "€8.4 bn", color: "bg-indigo-600" },
-    { label: "Programmes signed", percent: 44.2, value: "€4.2 bn", color: "bg-blue-500" },
-    { label: "Guarantees deployed", percent: 39.4, value: "€2.7 bn", color: "bg-cyan-600" },
-    { label: "Remaining funds", percent: 11.7, value: "€1.1 bn", color: "bg-amber-400" },
+    { label: "Funds Allocated", percent: 88.3, value: "€8.4 bn", color: "bg-indigo-600", info: "Total budget allocated to specific programmes out of the overall UIF budget." },
+    { label: "Programmes signed", percent: 44.2, value: "€4.2 bn", color: "bg-blue-500", info: "Value of programmes that have been officially signed with implementing partners." },
+    { label: "Guarantees deployed", percent: 39.4, value: "€2.7 bn", color: "bg-cyan-600", info: "Amount of guarantees effectively deployed to final beneficiaries." },
+    { label: "Remaining funds", percent: 11.7, value: "€1.1 bn", color: "bg-amber-400", info: "Budget currently unallocated and available for future calls." },
   ],
   targets: [
-    { label: "Green Target", actual: 32.7, target: 20, color: "bg-emerald-500" },
-    { label: "SME Target", actual: 9.3, target: 15, color: "bg-amber-500" },
+    { label: "Green Target", actual: 32.7, target: 20, color: "bg-emerald-500", info: "Percentage of investments contributing to climate and green transition objectives." },
+    { label: "SME Target", actual: 9.3, target: 15, color: "bg-amber-500", info: "Percentage of investments specifically targeting Small and Medium-sized Enterprises." },
   ],
   eu: { public: 57, private: 43 },
+  partners: {
+    distribution: [
+      { label: "MDBs", percent: 85, value: "€1.3 bn", color: "bg-blue-600" },
+      { label: "European DFIs", percent: 15, value: "€0.2 bn", color: "bg-emerald-500" }
+    ],
+    list: [
+      "EBRD (MDB)",
+      "EIB (MDB)",
+      "CEB (MDB)",
+      "IFC (MDB)",
+      "BGK (European DFI)",
+      "CDP (European DFI)",
+      "COFIDES (European DFI)",
+      "KfW (European DFI)"
+    ]
+  },
   lastUpdated: "16 April 2026"
 };
 
-// Bütçe Tablosu verileri - Developer Guide güncellemeleri (EIB Jumbo, Banking Call, Total Contracted) uygulandı
+// Bütçe Tablosu verileri
 const defaultTableData = [
   { id: 1, label: "1. UIF BUDGET", guarantees: 7800.00, grants: 1741.00, multiplier: null, totalInvestments: null, type: 'header' },
   { id: 2, label: "2. TOP-UPS", guarantees: null, grants: null, multiplier: null, totalInvestments: null, type: 'group' },
@@ -58,14 +80,14 @@ export default function App() {
   const [isBudgetEditing, setIsBudgetEditing] = useState(false);
   const [showMore, setShowMore] = useState(false);
 
-  // Veri çakışmasını temizlemek için key isimleri 'v3' ile değiştirildi
+  // Veri çakışmasını temizlemek için key isimleri 'v5' ile değiştirildi (Son güncellemeleri temiz almak için)
   const [dashboardData, setDashboardData] = useState(() => {
-    const saved = localStorage.getItem("uif-dashboard-data-v3");
+    const saved = localStorage.getItem("uif-dashboard-data-v5");
     return saved ? JSON.parse(saved) : defaultDashboardData;
   });
 
   const [tableData, setTableData] = useState(() => {
-    const saved = localStorage.getItem("uif-table-data-v3");
+    const saved = localStorage.getItem("uif-table-data-v5");
     return saved ? JSON.parse(saved) : defaultTableData;
   });
 
@@ -80,8 +102,8 @@ export default function App() {
   const handleSaveAll = () => {
     setDashboardData(tempDashboard);
     setTableData(tempTable);
-    localStorage.setItem("uif-dashboard-data-v3", JSON.stringify(tempDashboard));
-    localStorage.setItem("uif-table-data-v3", JSON.stringify(tempTable));
+    localStorage.setItem("uif-dashboard-data-v5", JSON.stringify(tempDashboard));
+    localStorage.setItem("uif-table-data-v5", JSON.stringify(tempTable));
     setIsDashboardCMSOpen(false);
     setIsBudgetEditing(false);
   };
@@ -118,12 +140,24 @@ export default function App() {
     return safeNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   };
 
+  // Tekrar kullanılabilir Tooltip Component'i
+  const Tooltip = ({ text, children }) => (
+    <div className="group relative inline-flex items-center">
+      {children}
+      {text && (
+        <div className="absolute left-1/2 -translate-x-1/2 bottom-full mb-2 hidden group-hover:block w-52 p-2.5 bg-slate-800 text-white text-[11px] rounded-lg shadow-xl z-50 text-center font-normal whitespace-normal pointer-events-none before:content-[''] before:absolute before:top-full before:left-1/2 before:-translate-x-1/2 before:border-4 before:border-transparent before:border-t-slate-800">
+          {text}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="bg-slate-100 min-h-screen p-6 font-sans text-slate-900">
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow border overflow-hidden">
+      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow border overflow-clip relative">
 
         {/* HEADER */}
-        <div className="p-6 flex justify-between items-center border-b bg-white">
+        <div className="p-6 flex justify-between items-center border-b bg-white relative z-20">
           <div>
             <h1 className="text-3xl font-bold text-slate-900">UIF Data Dashboard</h1>
             <p className="text-slate-500">
@@ -139,29 +173,58 @@ export default function App() {
         </div>
 
         {/* TOP METRICS */}
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-blue-600 text-white p-6 rounded-2xl shadow-sm">
-            <p className="text-xs uppercase tracking-wider font-bold opacity-80 mb-1">Investment Expected to be Mobilised</p>
+        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+          <div className="bg-blue-600 text-white p-6 rounded-2xl shadow-sm relative">
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-xs uppercase tracking-wider font-bold opacity-80 text-blue-100">Investment Expected to be Mobilised</p>
+              <Tooltip text={dashboardData.investmentMobilisedInfo}>
+                <Info size={14} className="text-blue-200 cursor-help opacity-70 hover:opacity-100 transition" />
+              </Tooltip>
+            </div>
             <h2 className="text-4xl font-bold">{dashboardData.investmentMobilised}</h2>
           </div>
 
-          <div className="bg-emerald-600 text-white p-6 rounded-2xl shadow-sm">
-            <p className="text-xs uppercase tracking-wider font-bold opacity-80 mb-1">Multiplier</p>
+          <div className="bg-emerald-600 text-white p-6 rounded-2xl shadow-sm relative">
+            <div className="flex items-center gap-2 mb-1">
+              <p className="text-xs uppercase tracking-wider font-bold opacity-80 text-emerald-100">Multiplier</p>
+              <Tooltip text={dashboardData.multiplierInfo}>
+                <Info size={14} className="text-emerald-200 cursor-help opacity-70 hover:opacity-100 transition" />
+              </Tooltip>
+            </div>
             <h2 className="text-4xl font-bold">{dashboardData.multiplier}</h2>
           </div>
         </div>
 
         {/* FUNDS OVERVIEW */}
-        <div className="px-6 pb-6">
+        <div className="px-6 pb-6 relative z-10">
           <div className="bg-white border rounded-2xl p-6 shadow-sm">
-            <h3 className="font-bold mb-6 flex items-center gap-2 text-slate-800">
-              <Wallet size={18} className="text-blue-600"/> UIF Funds Overview
-            </h3>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b pb-4">
+              <h3 className="font-bold flex items-center gap-2 text-slate-800">
+                <Wallet size={18} className="text-blue-600"/> UIF Funds Overview
+              </h3>
+              
+              {/* Added Reference Values */}
+              <div className="flex flex-wrap gap-3">
+                <div className="bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
+                  <span className="text-slate-400 mr-2 uppercase text-[10px]">Total Guarantees</span> 
+                  {dashboardData.fundsTotals?.guarantees || "€7.8 bn"}
+                </div>
+                <div className="bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
+                  <span className="text-slate-400 mr-2 uppercase text-[10px]">Total Grants</span> 
+                  {dashboardData.fundsTotals?.grants || "€1.74 bn"}
+                </div>
+              </div>
+            </div>
 
             {[...dashboardData.allocations.slice(0, 1), ...(showMore ? dashboardData.allocations.slice(1) : [])].map((item, i) => (
               <div key={i} className="mb-6 last:mb-0">
                 <div className="flex justify-between text-sm mb-2 font-medium text-slate-700">
-                  <span>{item.label}</span>
+                  <span className="flex items-center gap-1.5">
+                    {item.label}
+                    <Tooltip text={item.info}>
+                      <Info size={14} className="text-slate-300 cursor-help hover:text-slate-500 transition" />
+                    </Tooltip>
+                  </span>
                   <span>{item.value} <span className="text-slate-400">({Number(item.percent) || 0}%)</span></span>
                 </div>
 
@@ -182,7 +245,7 @@ export default function App() {
         </div>
 
         {/* TARGETS & PIE */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 pb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 pb-6 relative z-0">
           <div className="bg-white border rounded-2xl p-6 shadow-sm">
             <h3 className="font-bold mb-10 flex items-center gap-2 text-slate-800">
               <Target size={18} className="text-rose-600"/> Progress towards targets
@@ -192,44 +255,37 @@ export default function App() {
               {dashboardData.targets.map((t, i) => {
                 const actualVal = Number(t.actual) || 0;
                 const targetVal = Number(t.target) || 1; 
-                // Dinamik ölçek: En yüksek değere göre barın kapasitesini (%100) belirliyoruz.
                 const maxVal = Math.max(actualVal, targetVal);
-                
                 const actualPercent = Math.min((actualVal / maxVal) * 100, 100);
                 const targetPercent = Math.min((targetVal / maxVal) * 100, 100);
 
                 return (
                   <div key={i} className="mb-14 last:mb-4">
                     <div className="flex justify-between text-sm mb-6 font-semibold text-slate-700">
-                      <span>{t.label}</span>
+                      <span className="flex items-center gap-1.5">
+                        {t.label}
+                        <Tooltip text={t.info}>
+                          <Info size={14} className="text-slate-300 cursor-help hover:text-slate-500 transition" />
+                        </Tooltip>
+                      </span>
                     </div>
-                    {/* Arka plan çubuğu, maxVal'i (hedefi ya da gerçekleşeni) temsil ediyor */}
                     <div className="relative bg-slate-100 h-2 rounded-full w-full">
-                      {/* Renkli çubuk ilerlemeyi temsil ediyor */}
                       <div className={`${t.color} h-2 rounded-full transition-all duration-500`} style={{ width: `${actualPercent}%` }} />
                       
-                      {/* Gerçekleşen (Actual) yüzdesi */}
                       <div 
-                        className="absolute -top-8 text-[10px] font-bold px-2 py-0.5 bg-slate-800 text-white rounded shadow-sm z-10 whitespace-nowrap" 
-                        style={{ 
-                          left: `${actualPercent}%`, 
-                          transform: "translateX(-50%)" 
-                        }}
+                        className="absolute -top-8 text-[10px] font-bold px-2 py-0.5 bg-slate-800 text-white rounded shadow-sm whitespace-nowrap" 
+                        style={{ left: `${actualPercent}%`, transform: "translateX(-50%)" }}
                       >
                         {actualVal}%
                       </div>
                       
-                      {/* Hedef (Target) çizgisi ve etiketi ilgili orana göre yerleştirildi */}
                       <div 
                         className="absolute -top-1 w-[2px] h-4 bg-slate-900" 
                         style={{ left: `${targetPercent}%`, transform: "translateX(-50%)" }} 
                       />
                       <div 
                         className="absolute top-4 text-[9px] font-bold text-slate-400 whitespace-nowrap" 
-                        style={{ 
-                          left: `${targetPercent}%`, 
-                          transform: targetPercent > 90 ? "translateX(-100%)" : "translateX(-50%)" 
-                        }}
+                        style={{ left: `${targetPercent}%`, transform: targetPercent > 90 ? "translateX(-100%)" : "translateX(-50%)" }}
                       >
                         TARGET: {targetVal}%
                       </div>
@@ -266,6 +322,47 @@ export default function App() {
           </div>
         </div>
 
+        {/* IMPLEMENTING PARTNERS (NEW SECTION) */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-6 pb-6 relative z-0">
+          
+          {/* MDB vs DFI Distribution */}
+          <div className="bg-white border rounded-2xl p-6 shadow-sm">
+            <h3 className="font-bold mb-6 flex items-center gap-2 text-slate-800">
+              <Building size={18} className="text-blue-600"/> Overview of Funds per Partner Type
+            </h3>
+            <div className="space-y-6 mt-4">
+              {dashboardData.partners?.distribution.map((dist, i) => (
+                <div key={i}>
+                  <div className="flex justify-between text-sm mb-2 font-medium text-slate-700">
+                    <span>{dist.label}</span>
+                    <span>{dist.value} <span className="text-slate-400">({Number(dist.percent) || 0}%)</span></span>
+                  </div>
+                  <div className="bg-slate-100 h-3 rounded-full overflow-hidden w-full">
+                    <div className={`${dist.color} h-full rounded-full transition-all duration-500`} style={{ width: `${Number(dist.percent) || 0}%` }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* List of Partners */}
+          <div className="bg-white border rounded-2xl p-6 shadow-sm">
+            <h3 className="font-bold mb-4 flex items-center gap-2 text-slate-800">
+              <Users size={18} className="text-emerald-600"/> List of Implementing Partners
+            </h3>
+            <div className="bg-slate-50 border rounded-xl p-4 max-h-[160px] overflow-y-auto">
+              <ul className="space-y-2">
+                {dashboardData.partners?.list.map((partner, i) => (
+                  <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                    <span>{partner}</span>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+
         {/* FOOTER */}
         <div className="p-6 border-t bg-slate-50 flex flex-col md:flex-row justify-between items-center gap-4">
           <span className="text-xs font-medium text-slate-400">
@@ -286,13 +383,13 @@ export default function App() {
 
       {/* --- BUDGET TABLE MODAL --- */}
       {isBudgetModalOpen && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 md:p-10 z-50">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-4 md:p-10 z-[100]">
           <div className="bg-white w-full max-w-7xl max-h-[95vh] overflow-hidden rounded-3xl shadow-2xl flex flex-col">
             <div className="p-6 border-b flex justify-between items-center bg-slate-50/50">
               <h2 className="text-xl font-bold uppercase text-slate-800 tracking-tight">UIF Budget Overview</h2>
               <div className="flex gap-3">
                 <button onClick={exportToCSV} className="flex items-center gap-2 px-4 py-2 bg-slate-100 text-slate-700 hover:bg-slate-200 transition rounded-xl text-xs font-bold">
-                  <Download size={14}/> Export
+                  <Download size={14}/> Export CSV
                 </button>
                 {!isBudgetEditing ? (
                   <button onClick={() => {setTempTable(tableData); setIsBudgetEditing(true);}} className="flex items-center gap-2 px-4 py-2 bg-blue-50 text-blue-700 hover:bg-blue-100 transition rounded-xl text-xs font-bold">
@@ -342,7 +439,7 @@ export default function App() {
               </table>
             </div>
             <div className="p-6 border-t bg-slate-50 text-[10px] text-slate-400 italic flex justify-between">
-              <span>* All values are in EUR million.</span>
+              <span>* All values are in EUR million. Download button provides CSV format compatible with Excel.</span>
             </div>
           </div>
         </div>
@@ -350,8 +447,8 @@ export default function App() {
 
       {/* --- DASHBOARD CMS MODAL --- */}
       {isDashboardCMSOpen && (
-        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-6 z-50">
-          <div className="bg-white p-8 w-full max-w-3xl rounded-3xl shadow-2xl overflow-y-auto max-h-[90vh]">
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center p-6 z-[100]">
+          <div className="bg-white p-8 w-full max-w-4xl rounded-3xl shadow-2xl overflow-y-auto max-h-[90vh]">
             <div className="flex justify-between items-center mb-6">
               <h2 className="font-bold text-2xl text-slate-800">Dashboard CMS</h2>
               <button onClick={() => setIsDashboardCMSOpen(false)} className="p-2 hover:bg-slate-100 rounded-full transition"><X/></button>
@@ -359,13 +456,32 @@ export default function App() {
 
             <div className="space-y-6 text-sm">
               <div className="grid grid-cols-2 gap-4">
-                <div>
+                <div className="border p-4 rounded-xl bg-slate-50">
                   <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Expected Mobilised</label>
-                  <input className="border-2 p-3 w-full rounded-xl focus:border-blue-500 outline-none" value={tempDashboard.investmentMobilised} onChange={(e)=>setTempDashboard({...tempDashboard, investmentMobilised:e.target.value})}/>
+                  <input className="border p-2 w-full rounded mb-2 text-sm" value={tempDashboard.investmentMobilised} onChange={(e)=>setTempDashboard({...tempDashboard, investmentMobilised:e.target.value})}/>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Tooltip Info</label>
+                  <input className="border p-2 w-full rounded text-xs text-slate-500" value={tempDashboard.investmentMobilisedInfo} onChange={(e)=>setTempDashboard({...tempDashboard, investmentMobilisedInfo:e.target.value})}/>
                 </div>
-                <div>
+                <div className="border p-4 rounded-xl bg-slate-50">
                   <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Main Multiplier</label>
-                  <input className="border-2 p-3 w-full rounded-xl focus:border-blue-500 outline-none" value={tempDashboard.multiplier} onChange={(e)=>setTempDashboard({...tempDashboard, multiplier:e.target.value})}/>
+                  <input className="border p-2 w-full rounded mb-2 text-sm" value={tempDashboard.multiplier} onChange={(e)=>setTempDashboard({...tempDashboard, multiplier:e.target.value})}/>
+                  <label className="text-[10px] font-bold text-slate-400 uppercase mb-1 block">Tooltip Info</label>
+                  <input className="border p-2 w-full rounded text-xs text-slate-500" value={tempDashboard.multiplierInfo} onChange={(e)=>setTempDashboard({...tempDashboard, multiplierInfo:e.target.value})}/>
+                </div>
+              </div>
+
+              {/* Funds Totals CMS */}
+              <div className="border-t pt-4">
+                <label className="text-[10px] font-bold text-slate-500 uppercase mb-3 block">Funds Overview Reference Totals</label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-xs text-slate-500 block mb-1">Total Guarantees</label>
+                    <input className="border p-2 w-full rounded text-sm" value={tempDashboard.fundsTotals.guarantees} onChange={(e)=>setTempDashboard({...tempDashboard, fundsTotals: {...tempDashboard.fundsTotals, guarantees: e.target.value}})}/>
+                  </div>
+                  <div>
+                    <label className="text-xs text-slate-500 block mb-1">Total Grants</label>
+                    <input className="border p-2 w-full rounded text-sm" value={tempDashboard.fundsTotals.grants} onChange={(e)=>setTempDashboard({...tempDashboard, fundsTotals: {...tempDashboard.fundsTotals, grants: e.target.value}})}/>
+                  </div>
                 </div>
               </div>
 
@@ -374,21 +490,24 @@ export default function App() {
                 <label className="text-[10px] font-bold text-slate-500 uppercase mb-3 block">Allocations Overview</label>
                 <div className="space-y-3">
                   {tempDashboard.allocations.map((a, i) => (
-                    <div key={i} className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2 rounded-lg">
-                      <div className="col-span-5">
-                        <input className="w-full border p-2 rounded text-xs" value={a.label} onChange={(e) => {
+                    <div key={i} className="grid grid-cols-12 gap-2 items-start bg-slate-50 p-3 rounded-lg border">
+                      <div className="col-span-5 space-y-2">
+                        <input className="w-full border p-1.5 rounded text-xs" value={a.label} onChange={(e) => {
                           const arr = [...tempDashboard.allocations]; arr[i].label = e.target.value; setTempDashboard({...tempDashboard, allocations: arr});
-                        }} />
+                        }} placeholder="Label"/>
+                        <input className="w-full border p-1.5 rounded text-[10px] text-slate-500" value={a.info || ""} onChange={(e) => {
+                          const arr = [...tempDashboard.allocations]; arr[i].info = e.target.value; setTempDashboard({...tempDashboard, allocations: arr});
+                        }} placeholder="Tooltip info..."/>
                       </div>
                       <div className="col-span-4">
-                        <input className="w-full border p-2 rounded text-xs" value={a.value} onChange={(e) => {
+                        <input className="w-full border p-1.5 rounded text-xs" value={a.value} onChange={(e) => {
                           const arr = [...tempDashboard.allocations]; arr[i].value = e.target.value; setTempDashboard({...tempDashboard, allocations: arr});
-                        }} />
+                        }} placeholder="Value"/>
                       </div>
                       <div className="col-span-3">
-                        <input className="w-full border p-2 rounded text-xs" type="number" value={a.percent ?? ""} onChange={(e) => {
+                        <input className="w-full border p-1.5 rounded text-xs" type="number" value={a.percent ?? ""} onChange={(e) => {
                           const arr = [...tempDashboard.allocations]; arr[i].percent = e.target.value === "" ? "" : parseFloat(e.target.value); setTempDashboard({...tempDashboard, allocations: arr});
-                        }} />
+                        }} placeholder="%"/>
                       </div>
                     </div>
                   ))}
@@ -400,22 +519,64 @@ export default function App() {
                 <label className="text-[10px] font-bold text-slate-500 uppercase mb-3 block">Targets Progress (%)</label>
                 <div className="space-y-3">
                   {tempDashboard.targets.map((t, i) => (
-                    <div key={i} className="grid grid-cols-12 gap-2 items-center bg-slate-50 p-2 rounded-lg">
-                      <div className="col-span-6 font-semibold text-slate-600 px-2">{t.label}</div>
+                    <div key={i} className="grid grid-cols-12 gap-2 items-start bg-slate-50 p-3 rounded-lg border">
+                      <div className="col-span-6 space-y-2">
+                         <div className="font-semibold text-slate-600 px-2 text-xs">{t.label}</div>
+                         <input className="w-full border p-1.5 rounded text-[10px] text-slate-500" value={t.info || ""} onChange={(e) => {
+                          const arr = [...tempDashboard.targets]; arr[i].info = e.target.value; setTempDashboard({...tempDashboard, targets: arr});
+                        }} placeholder="Tooltip info..."/>
+                      </div>
                       <div className="col-span-3">
-                        <label className="text-[8px] block uppercase text-slate-400">Actual</label>
+                        <label className="text-[8px] block uppercase text-slate-400 mb-1">Actual</label>
                         <input className="w-full border p-1.5 rounded text-xs" type="number" step="0.1" value={t.actual ?? ""} onChange={(e) => {
                           const arr = [...tempDashboard.targets]; arr[i].actual = e.target.value === "" ? "" : parseFloat(e.target.value); setTempDashboard({...tempDashboard, targets: arr});
                         }} />
                       </div>
                       <div className="col-span-3">
-                        <label className="text-[8px] block uppercase text-slate-400">Target</label>
+                        <label className="text-[8px] block uppercase text-slate-400 mb-1">Target</label>
                         <input className="w-full border p-1.5 rounded text-xs" type="number" step="1" value={t.target ?? ""} onChange={(e) => {
                           const arr = [...tempDashboard.targets]; arr[i].target = e.target.value === "" ? "" : parseFloat(e.target.value); setTempDashboard({...tempDashboard, targets: arr});
                         }} />
                       </div>
                     </div>
                   ))}
+                </div>
+              </div>
+
+              {/* Implementing Partners CMS */}
+              <div className="border-t pt-4">
+                <label className="text-[10px] font-bold text-slate-500 uppercase mb-3 block">Implementing Partners (MDBs vs DFIs)</label>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-3">
+                    <label className="text-xs font-bold text-slate-600">Distribution Bars</label>
+                    {tempDashboard.partners.distribution.map((dist, i) => (
+                       <div key={i} className="bg-slate-50 p-2 rounded border grid grid-cols-3 gap-2">
+                          <input className="col-span-3 border p-1 rounded text-xs" value={dist.label} onChange={(e) => {
+                            const arr = [...tempDashboard.partners.distribution]; arr[i].label = e.target.value;
+                            setTempDashboard({...tempDashboard, partners: {...tempDashboard.partners, distribution: arr}});
+                          }}/>
+                          <input className="col-span-2 border p-1 rounded text-xs" value={dist.value} placeholder="Value (e.g. €7.3 bn)" onChange={(e) => {
+                            const arr = [...tempDashboard.partners.distribution]; arr[i].value = e.target.value;
+                            setTempDashboard({...tempDashboard, partners: {...tempDashboard.partners, distribution: arr}});
+                          }}/>
+                          <input className="col-span-1 border p-1 rounded text-xs" type="number" placeholder="%" value={dist.percent ?? ""} onChange={(e) => {
+                            const arr = [...tempDashboard.partners.distribution]; arr[i].percent = e.target.value === "" ? "" : parseFloat(e.target.value);
+                            setTempDashboard({...tempDashboard, partners: {...tempDashboard.partners, distribution: arr}});
+                          }}/>
+                       </div>
+                    ))}
+                  </div>
+                  <div>
+                     <label className="text-xs font-bold text-slate-600 mb-2 block">Partners List (one per line)</label>
+                     <textarea 
+                        className="w-full border p-2 rounded text-xs h-32 leading-relaxed" 
+                        value={tempDashboard.partners.list.join('\n')}
+                        onChange={(e) => {
+                           const lines = e.target.value.split('\n');
+                           setTempDashboard({...tempDashboard, partners: {...tempDashboard.partners, list: lines}});
+                        }}
+                     />
+                  </div>
                 </div>
               </div>
 
