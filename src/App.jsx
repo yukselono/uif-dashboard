@@ -81,9 +81,8 @@ export default function App() {
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [isBudgetEditing, setIsBudgetEditing] = useState(false);
   
-  // Local toggles
-  const [showMoreAllocations, setShowMoreAllocations] = useState(false);
-  const [showAdvancedCharts, setShowAdvancedCharts] = useState(false);
+  // Single global toggle for everything
+  const [showDetails, setShowDetails] = useState(false);
 
   // Veri çakışmasını temizlemek için key isimleri 'v6' ile değiştirildi
   const [dashboardData, setDashboardData] = useState(() => {
@@ -235,7 +234,7 @@ export default function App() {
               </div>
             </div>
 
-            {[...dashboardData.allocations.slice(0, 1), ...(showMoreAllocations ? dashboardData.allocations.slice(1) : [])].map((item, i) => (
+            {[...dashboardData.allocations.slice(0, 1), ...(showDetails ? dashboardData.allocations.slice(1) : [])].map((item, i) => (
               <div key={i} className="mb-6 last:mb-0">
                 <div className="flex justify-between text-sm mb-2 font-medium text-slate-700">
                   <span className="flex items-center gap-1.5">
@@ -252,30 +251,22 @@ export default function App() {
                 </div>
               </div>
             ))}
-
-            <button 
-              onClick={() => setShowMoreAllocations(!showMoreAllocations)} 
-              className="mt-4 text-sm font-bold text-blue-600 flex items-center gap-1 hover:underline"
-            >
-              {showMoreAllocations ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
-              {showMoreAllocations ? "SHOW LESS" : "SHOW MORE"}
-            </button>
           </div>
         </div>
 
-        {/* Global Show/Hide Button for Detail Charts */}
+        {/* Global Show/Hide Button for Detail Charts and Allocations */}
         <div className="px-6 py-6 relative z-10 flex justify-center">
            <button 
-              onClick={() => setShowAdvancedCharts(!showAdvancedCharts)}
-              className="bg-white border hover:bg-slate-50 transition px-6 py-3 rounded-full text-sm font-bold shadow-sm flex items-center gap-2 text-slate-600 active:scale-95"
+              onClick={() => setShowDetails(!showDetails)}
+              className="bg-white border hover:bg-slate-50 transition px-8 py-3 rounded-full text-sm font-bold shadow-sm flex items-center gap-2 text-slate-600 active:scale-95"
            >
-              {showAdvancedCharts ? <ChevronUp size={16}/> : <BarChart3 size={16}/>}
-              {showAdvancedCharts ? "Hide detailed charts" : "Show detailed charts"}
+              {showDetails ? <ChevronUp size={16}/> : <ChevronDown size={16}/>}
+              {showDetails ? "Show less" : "Show more"}
            </button>
         </div>
 
         {/* ADVANCED CHARTS SECTION (Hidden by default) */}
-        {showAdvancedCharts && (
+        {showDetails && (
           <div className="animate-in fade-in slide-in-from-top-4 duration-500">
             {/* TARGETS & PIE */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 pb-6 relative z-0">
