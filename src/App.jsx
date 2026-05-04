@@ -15,10 +15,11 @@ import {
   Download,
   Info,
   Building,
-  Users
+  Users,
+  BarChart3
 } from "lucide-react";
 
-// Dashboard metrikleri için başlangıç verileri (Tooltip'ler ve Yeni Bölümler eklendi)
+// Dashboard metrikleri için başlangıç verileri (Pie Chart ve EIB Eklentisi)
 const defaultDashboardData = {
   investmentMobilised: "€25.2 bn",
   investmentMobilisedInfo: "Total estimated investments expected to be mobilised by UIF guarantees and grants.",
@@ -38,14 +39,15 @@ const defaultDashboardData = {
   eu: { public: 57, private: 43 },
   partners: {
     distribution: [
-      { label: "MDBs", percent: 85, value: "€1.3 bn", color: "bg-blue-600" },
-      { label: "European DFIs", percent: 15, value: "€0.2 bn", color: "bg-emerald-500" }
+      { label: "MDBs", percent: 35, value: "€...", color: "bg-blue-600", hex: "#2563eb" },
+      { label: "European DFIs", percent: 15, value: "€...", color: "bg-emerald-500", hex: "#10b981" },
+      { label: "EIB", percent: 50, value: "€...", color: "bg-amber-500", hex: "#f59e0b" }
     ],
     list: [
       "EBRD (MDB)",
-      "EIB (MDB)",
       "CEB (MDB)",
       "IFC (MDB)",
+      "EIB",
       "BGK (European DFI)",
       "CDP (European DFI)",
       "COFIDES (European DFI)",
@@ -78,16 +80,19 @@ export default function App() {
   const [isDashboardCMSOpen, setIsDashboardCMSOpen] = useState(false);
   const [isBudgetModalOpen, setIsBudgetModalOpen] = useState(false);
   const [isBudgetEditing, setIsBudgetEditing] = useState(false);
-  const [showMore, setShowMore] = useState(false);
+  
+  // Local toggles
+  const [showMoreAllocations, setShowMoreAllocations] = useState(false);
+  const [showAdvancedCharts, setShowAdvancedCharts] = useState(false);
 
-  // Veri çakışmasını temizlemek için key isimleri 'v5' ile değiştirildi (Son güncellemeleri temiz almak için)
+  // Veri çakışmasını temizlemek için key isimleri 'v6' ile değiştirildi
   const [dashboardData, setDashboardData] = useState(() => {
-    const saved = localStorage.getItem("uif-dashboard-data-v5");
+    const saved = localStorage.getItem("uif-dashboard-data-v6");
     return saved ? JSON.parse(saved) : defaultDashboardData;
   });
 
   const [tableData, setTableData] = useState(() => {
-    const saved = localStorage.getItem("uif-table-data-v5");
+    const saved = localStorage.getItem("uif-table-data-v6");
     return saved ? JSON.parse(saved) : defaultTableData;
   });
 
@@ -102,8 +107,8 @@ export default function App() {
   const handleSaveAll = () => {
     setDashboardData(tempDashboard);
     setTableData(tempTable);
-    localStorage.setItem("uif-dashboard-data-v5", JSON.stringify(tempDashboard));
-    localStorage.setItem("uif-table-data-v5", JSON.stringify(tempTable));
+    localStorage.setItem("uif-dashboard-data-v6", JSON.stringify(tempDashboard));
+    localStorage.setItem("uif-table-data-v6", JSON.stringify(tempTable));
     setIsDashboardCMSOpen(false);
     setIsBudgetEditing(false);
   };
@@ -138,6 +143,21 @@ export default function App() {
     const safeNum = Number(num);
     if (num === null || num === undefined || isNaN(safeNum) || num === "") return "—";
     return safeNum.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  };
+
+  // Ortaklar Pie Chart Gradient Hesaplayıcı
+  const getPartnerGradient = () => {
+    let currentPercent = 0;
+    const dists = dashboardData.partners?.distribution || [];
+    const parts = dists.map(d => {
+      const start = currentPercent;
+      currentPercent += (Number(d.percent) || 0);
+      return `${d.hex || '#ccc'} ${start}% ${currentPercent}%`;
+    });
+    if (currentPercent < 100) {
+      parts.push(`#e2e8f0 ${currentPercent}% 100%`); // Kalan kısım gri
+    }
+    return `conic-gradient(${parts.join(', ')})`;
   };
 
   // Tekrar kullanılabilir Tooltip Component'i
@@ -196,14 +216,13 @@ export default function App() {
         </div>
 
         {/* FUNDS OVERVIEW */}
-        <div className="px-6 pb-6 relative z-10">
+        <div className="px-6 relative z-10">
           <div className="bg-white border rounded-2xl p-6 shadow-sm">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4 border-b pb-4">
               <h3 className="font-bold flex items-center gap-2 text-slate-800">
                 <Wallet size={18} className="text-blue-600"/> UIF Funds Overview
               </h3>
               
-              {/* Added Reference Values */}
               <div className="flex flex-wrap gap-3">
                 <div className="bg-slate-50 border border-slate-200 text-slate-700 px-3 py-1.5 rounded-lg text-xs font-bold flex items-center shadow-sm">
                   <span className="text-slate-400 mr-2 uppercase text-[10px]">Total Guarantees</span> 
@@ -216,7 +235,7 @@ export default function App() {
               </div>
             </div>
 
-            {[...dashboardData.allocations.slice(0, 1), ...(showMore ? dashboardData.allocations.slice(1) : [])].map((item, i) => (
+            {[...dashboardData.allocations.slice(0, 1), ...(showMoreAllocations ? dashboardData.allocations.slice(1) : [])].map((item, i) => (
               <div key={i} className="mb-6 last:mb-0">
                 <div className="flex justify-between text-sm mb-2 font-medium text-slate-700">
                   <span className="flex items-center gap-1.5">
@@ -235,133 +254,162 @@ export default function App() {
             ))}
 
             <button 
-              onClick={() => setShowMore(!showMore)} 
+              onClick={() => setShowMoreAllocations(!showMoreAllocations)} 
               className="mt-4 text-sm font-bold text-blue-600 flex items-center gap-1 hover:underline"
             >
-              {showMore ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
-              {showMore ? "SHOW LESS" : "SHOW MORE"}
+              {showMoreAllocations ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
+              {showMoreAllocations ? "SHOW LESS" : "SHOW MORE"}
             </button>
           </div>
         </div>
 
-        {/* TARGETS & PIE */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 pb-6 relative z-0">
-          <div className="bg-white border rounded-2xl p-6 shadow-sm">
-            <h3 className="font-bold mb-10 flex items-center gap-2 text-slate-800">
-              <Target size={18} className="text-rose-600"/> Progress towards targets
-            </h3>
+        {/* Global Show/Hide Button for Detail Charts */}
+        <div className="px-6 py-6 relative z-10 flex justify-center">
+           <button 
+              onClick={() => setShowAdvancedCharts(!showAdvancedCharts)}
+              className="bg-white border hover:bg-slate-50 transition px-6 py-3 rounded-full text-sm font-bold shadow-sm flex items-center gap-2 text-slate-600 active:scale-95"
+           >
+              {showAdvancedCharts ? <ChevronUp size={16}/> : <BarChart3 size={16}/>}
+              {showAdvancedCharts ? "Hide detailed charts" : "Show detailed charts"}
+           </button>
+        </div>
 
-            <div className="px-4">
-              {dashboardData.targets.map((t, i) => {
-                const actualVal = Number(t.actual) || 0;
-                const targetVal = Number(t.target) || 1; 
-                const maxVal = Math.max(actualVal, targetVal);
-                const actualPercent = Math.min((actualVal / maxVal) * 100, 100);
-                const targetPercent = Math.min((targetVal / maxVal) * 100, 100);
+        {/* ADVANCED CHARTS SECTION (Hidden by default) */}
+        {showAdvancedCharts && (
+          <div className="animate-in fade-in slide-in-from-top-4 duration-500">
+            {/* TARGETS & PIE */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 px-6 pb-6 relative z-0">
+              <div className="bg-white border rounded-2xl p-6 shadow-sm">
+                <h3 className="font-bold mb-10 flex items-center gap-2 text-slate-800">
+                  <Target size={18} className="text-rose-600"/> Progress towards targets
+                </h3>
 
-                return (
-                  <div key={i} className="mb-14 last:mb-4">
-                    <div className="flex justify-between text-sm mb-6 font-semibold text-slate-700">
-                      <span className="flex items-center gap-1.5">
-                        {t.label}
-                        <Tooltip text={t.info}>
-                          <Info size={14} className="text-slate-300 cursor-help hover:text-slate-500 transition" />
-                        </Tooltip>
-                      </span>
-                    </div>
-                    <div className="relative bg-slate-100 h-2 rounded-full w-full">
-                      <div className={`${t.color} h-2 rounded-full transition-all duration-500`} style={{ width: `${actualPercent}%` }} />
-                      
-                      <div 
-                        className="absolute -top-8 text-[10px] font-bold px-2 py-0.5 bg-slate-800 text-white rounded shadow-sm whitespace-nowrap" 
-                        style={{ left: `${actualPercent}%`, transform: "translateX(-50%)" }}
-                      >
-                        {actualVal}%
+                <div className="px-4">
+                  {dashboardData.targets.map((t, i) => {
+                    const actualVal = Number(t.actual) || 0;
+                    const targetVal = Number(t.target) || 1; 
+                    const maxVal = Math.max(actualVal, targetVal);
+                    const actualPercent = Math.min((actualVal / maxVal) * 100, 100);
+                    const targetPercent = Math.min((targetVal / maxVal) * 100, 100);
+
+                    return (
+                      <div key={i} className="mb-14 last:mb-4">
+                        <div className="flex justify-between text-sm mb-6 font-semibold text-slate-700">
+                          <span className="flex items-center gap-1.5">
+                            {t.label}
+                            <Tooltip text={t.info}>
+                              <Info size={14} className="text-slate-300 cursor-help hover:text-slate-500 transition" />
+                            </Tooltip>
+                          </span>
+                        </div>
+                        <div className="relative bg-slate-100 h-2 rounded-full w-full">
+                          <div className={`${t.color} h-2 rounded-full transition-all duration-500`} style={{ width: `${actualPercent}%` }} />
+                          
+                          <div 
+                            className="absolute -top-8 text-[10px] font-bold px-2 py-0.5 bg-slate-800 text-white rounded shadow-sm whitespace-nowrap" 
+                            style={{ left: `${actualPercent}%`, transform: "translateX(-50%)" }}
+                          >
+                            {actualVal}%
+                          </div>
+                          
+                          <div 
+                            className="absolute -top-1 w-[2px] h-4 bg-slate-900" 
+                            style={{ left: `${targetPercent}%`, transform: "translateX(-50%)" }} 
+                          />
+                          <div 
+                            className="absolute top-4 text-[9px] font-bold text-slate-400 whitespace-nowrap" 
+                            style={{ left: `${targetPercent}%`, transform: targetPercent > 90 ? "translateX(-100%)" : "translateX(-50%)" }}
+                          >
+                            TARGET: {targetVal}%
+                          </div>
+                        </div>
                       </div>
-                      
-                      <div 
-                        className="absolute -top-1 w-[2px] h-4 bg-slate-900" 
-                        style={{ left: `${targetPercent}%`, transform: "translateX(-50%)" }} 
-                      />
-                      <div 
-                        className="absolute top-4 text-[9px] font-bold text-slate-400 whitespace-nowrap" 
-                        style={{ left: `${targetPercent}%`, transform: targetPercent > 90 ? "translateX(-100%)" : "translateX(-50%)" }}
-                      >
-                        TARGET: {targetVal}%
-                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <div className="bg-white border rounded-2xl p-6 text-center shadow-sm">
+                <h3 className="font-bold mb-6 flex justify-center items-center gap-2 text-slate-800">
+                  <PieChart size={18} className="text-indigo-600"/> Share of EU Contribution
+                </h3>
+
+                <div className="relative w-44 h-44 mx-auto">
+                  <div className="w-full h-full rounded-full" style={{ background: `conic-gradient(#3b82f6 0% ${Number(dashboardData.eu.public) || 0}%, #f43f5e ${Number(dashboardData.eu.public) || 0}% 100%)` }} />
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <div className="bg-white w-28 h-28 rounded-full shadow-inner flex flex-col items-center justify-center">
                     </div>
                   </div>
-                );
-              })}
-            </div>
-          </div>
+                </div>
 
-          <div className="bg-white border rounded-2xl p-6 text-center shadow-sm">
-            <h3 className="font-bold mb-6 flex justify-center items-center gap-2 text-slate-800">
-              <PieChart size={18} className="text-indigo-600"/> Share of EU Contribution
-            </h3>
-
-            <div className="relative w-44 h-44 mx-auto">
-              <div className="w-full h-full rounded-full" style={{ background: `conic-gradient(#3b82f6 0% ${Number(dashboardData.eu.public) || 0}%, #f43f5e ${Number(dashboardData.eu.public) || 0}% 100%)` }} />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="bg-white w-28 h-28 rounded-full shadow-inner flex flex-col items-center justify-center">
+                <div className="flex justify-center gap-6 mt-8 text-xs font-bold uppercase tracking-widest">
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-blue-500"/>
+                    <span className="text-slate-600">Public ({Number(dashboardData.eu.public) || 0}%)</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-3 h-3 rounded-full bg-rose-500"/>
+                    <span className="text-slate-600">Private ({Number(dashboardData.eu.private) || 0}%)</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-center gap-6 mt-8 text-xs font-bold uppercase tracking-widest">
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-blue-500"/>
-                <span className="text-slate-600">Public ({Number(dashboardData.eu.public) || 0}%)</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-3 h-3 rounded-full bg-rose-500"/>
-                <span className="text-slate-600">Private ({Number(dashboardData.eu.private) || 0}%)</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* IMPLEMENTING PARTNERS (NEW SECTION) */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-6 pb-6 relative z-0">
-          
-          {/* MDB vs DFI Distribution */}
-          <div className="bg-white border rounded-2xl p-6 shadow-sm">
-            <h3 className="font-bold mb-6 flex items-center gap-2 text-slate-800">
-              <Building size={18} className="text-blue-600"/> Overview of Funds per Partner Type
-            </h3>
-            <div className="space-y-6 mt-4">
-              {dashboardData.partners?.distribution.map((dist, i) => (
-                <div key={i}>
-                  <div className="flex justify-between text-sm mb-2 font-medium text-slate-700">
-                    <span>{dist.label}</span>
-                    <span>{dist.value} <span className="text-slate-400">({Number(dist.percent) || 0}%)</span></span>
+            {/* IMPLEMENTING PARTNERS */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 px-6 pb-6 relative z-0">
+              
+              {/* MDB vs DFI vs EIB Distribution (Now as Pie Chart) */}
+              <div className="bg-white border rounded-2xl p-6 shadow-sm">
+                <h3 className="font-bold mb-6 flex items-center gap-2 text-slate-800">
+                  <PieChart size={18} className="text-blue-600"/> Overview of Funds per Partner Type
+                </h3>
+                
+                <div className="flex flex-col md:flex-row items-center justify-center gap-8 mt-6">
+                  {/* Pie Chart */}
+                  <div className="relative w-44 h-44 shrink-0">
+                    <div 
+                      className="w-full h-full rounded-full" 
+                      style={{ background: getPartnerGradient() }} 
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="bg-white w-28 h-28 rounded-full shadow-inner" />
+                    </div>
                   </div>
-                  <div className="bg-slate-100 h-3 rounded-full overflow-hidden w-full">
-                    <div className={`${dist.color} h-full rounded-full transition-all duration-500`} style={{ width: `${Number(dist.percent) || 0}%` }} />
+
+                  {/* Legend */}
+                  <div className="flex-1 w-full max-w-[200px] space-y-4">
+                    {dashboardData.partners?.distribution.map((dist, i) => (
+                      <div key={i} className="flex justify-between items-center text-sm font-medium text-slate-700">
+                        <div className="flex items-center gap-2">
+                          <span className={`w-3 h-3 rounded-full shrink-0 ${dist.color}`} />
+                          <span className="whitespace-nowrap">{dist.label}</span>
+                        </div>
+                        <span className="font-bold ml-3">{Number(dist.percent) || 0}%</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
+              </div>
 
-          {/* List of Partners */}
-          <div className="bg-white border rounded-2xl p-6 shadow-sm">
-            <h3 className="font-bold mb-4 flex items-center gap-2 text-slate-800">
-              <Users size={18} className="text-emerald-600"/> List of Implementing Partners
-            </h3>
-            <div className="bg-slate-50 border rounded-xl p-4 max-h-[160px] overflow-y-auto">
-              <ul className="space-y-2">
-                {dashboardData.partners?.list.map((partner, i) => (
-                  <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
-                    <span>{partner}</span>
-                  </li>
-                ))}
-              </ul>
+              {/* List of Partners */}
+              <div className="bg-white border rounded-2xl p-6 shadow-sm flex flex-col">
+                <h3 className="font-bold mb-4 flex items-center gap-2 text-slate-800 shrink-0">
+                  <Users size={18} className="text-emerald-600"/> List of Implementing Partners
+                </h3>
+                <div className="bg-slate-50 border rounded-xl p-4 flex-1 overflow-y-auto">
+                  <ul className="space-y-2">
+                    {dashboardData.partners?.list.map((partner, i) => (
+                      <li key={i} className="flex items-start gap-2 text-sm text-slate-600">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mt-1.5 shrink-0" />
+                        <span>{partner}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* FOOTER */}
         <div className="p-6 border-t bg-slate-50 flex flex-col md:flex-row justify-between items-center gap-4">
@@ -543,19 +591,20 @@ export default function App() {
                 </div>
               </div>
 
-              {/* Implementing Partners CMS */}
+              {/* Implementing Partners CMS (Pie Chart Elements) */}
               <div className="border-t pt-4">
-                <label className="text-[10px] font-bold text-slate-500 uppercase mb-3 block">Implementing Partners (MDBs vs DFIs)</label>
+                <label className="text-[10px] font-bold text-slate-500 uppercase mb-3 block">Implementing Partners (3 Pie Chart Elements)</label>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-3">
-                    <label className="text-xs font-bold text-slate-600">Distribution Bars</label>
+                    <label className="text-xs font-bold text-slate-600">Distribution Chart Items</label>
                     {tempDashboard.partners.distribution.map((dist, i) => (
                        <div key={i} className="bg-slate-50 p-2 rounded border grid grid-cols-3 gap-2">
                           <input className="col-span-3 border p-1 rounded text-xs" value={dist.label} onChange={(e) => {
                             const arr = [...tempDashboard.partners.distribution]; arr[i].label = e.target.value;
                             setTempDashboard({...tempDashboard, partners: {...tempDashboard.partners, distribution: arr}});
-                          }}/>
-                          <input className="col-span-2 border p-1 rounded text-xs" value={dist.value} placeholder="Value (e.g. €7.3 bn)" onChange={(e) => {
+                          }} placeholder="Label (e.g. MDBs)"/>
+                          <div className="col-span-2 hidden"></div> {/* Value input removed since it wasn't requested for the pie legend, keeping layout intact by using col-span-3 for label */}
+                          <input className="col-span-2 border p-1 rounded text-xs" value={dist.value || ""} placeholder="Value (e.g. €1.3 bn)" onChange={(e) => {
                             const arr = [...tempDashboard.partners.distribution]; arr[i].value = e.target.value;
                             setTempDashboard({...tempDashboard, partners: {...tempDashboard.partners, distribution: arr}});
                           }}/>
@@ -569,7 +618,7 @@ export default function App() {
                   <div>
                      <label className="text-xs font-bold text-slate-600 mb-2 block">Partners List (one per line)</label>
                      <textarea 
-                        className="w-full border p-2 rounded text-xs h-32 leading-relaxed" 
+                        className="w-full border p-2 rounded text-xs h-[180px] leading-relaxed" 
                         value={tempDashboard.partners.list.join('\n')}
                         onChange={(e) => {
                            const lines = e.target.value.split('\n');
